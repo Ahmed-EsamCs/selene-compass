@@ -28,3 +28,11 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules (Selene Compass)
+
+- Terrain, illumination, Earth-visibility and scoring live in `src/lib/lunar/*` as pure TypeScript (no React/three); the 3D scene and panels only draw their output, so rules stay unit-testable.
+- All terrain values are procedurally simulated; any UI showing them must keep a visible "demonstration data" label — never present them as NASA measurements.
+- 3D routes (`/`, `/sites`) set `ssr: false`; the terrain grid is built once client-side and shared via `useTerrain()`.
+- HUD buttons drive the camera through `cameraApi` (registered by the in-canvas CameraRig) instead of React state, to keep per-frame camera motion out of React renders.
+- WebGL colours live in `scene/palette.ts` as sRGB mirrors of the CSS tokens and are converted to linear before writing vertex colours.
