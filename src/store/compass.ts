@@ -71,7 +71,7 @@ export const useCompass = create<CompassState>((set) => ({
   sunPhase: 0.32,
   sunPlaying: false,
   autoRotate: false,
-  selectedSiteId: "peak-shackleton",
+  selectedSiteId: "shackleton-rim",
   probe: null,
   hover: null,
   pendingFocus: false,

@@ -4,7 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import type { Classification, TerrainData } from "@/lib/lunar/analysis";
 import { CLASS_FROM_INDEX } from "@/lib/lunar/analysis";
-import { SITES } from "@/lib/lunar/sites";
+import { SITES, labelLevels } from "@/lib/lunar/sites";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useCompass } from "@/store/compass";
 import { cameraApi } from "./camera-api";
 import { PALETTE } from "./palette";
@@ -37,6 +38,9 @@ export function SiteMarkers({
 }) {
   const selected = useCompass((s) => s.selectedSiteId);
   const selectSite = useCompass((s) => s.selectSite);
+  const isMobile = useIsMobile();
+  // Nearby sites stack their labels at different heights instead of overlapping.
+  const levels = useMemo(() => labelLevels(SITES, isMobile ? 14 : 9), [isMobile]);
 
   return (
     <group>
@@ -49,9 +53,11 @@ export function SiteMarkers({
             position={[s.x, h, -s.y]}
             color={CLASS_COLOR[cls]}
             cls={cls}
-            name={s.name}
+            name={isMobile ? s.short : s.name}
+            level={levels.get(s.id) ?? 0}
             selected={selected === s.id}
-            showLabel={showLabels}
+            // Phones: only the selected site is labelled; the rest stay tappable markers.
+            showLabel={showLabels && (!isMobile || selected === s.id)}
             labelPortal={labelPortal}
             onSelect={() => {
               selectSite(s.id);
@@ -69,6 +75,7 @@ function SiteMarker({
   color,
   cls,
   name,
+  level,
   selected,
   showLabel,
   labelPortal,
@@ -79,6 +86,7 @@ function SiteMarker({
   color: THREE.Color;
   cls: "safe" | "caution" | "hazard";
   name: string;
+  level: number;
   selected: boolean;
   showLabel: boolean;
   onSelect: () => void;
@@ -90,6 +98,7 @@ function SiteMarker({
     ring.current.scale.setScalar(s);
   });
   const size = selected ? 1.6 : 1.1;
+  const pole = 6.4 + level * 4;
   return (
     <group position={position}>
       <mesh
@@ -106,8 +115,8 @@ function SiteMarker({
         <ringGeometry args={[size, size + 0.45, 40]} />
         <meshBasicMaterial color={color} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
-      <mesh position-y={3.2} onClick={(e) => (e.stopPropagation(), onSelect())}>
-        <cylinderGeometry args={[0.09, 0.09, 6.4, 8]} />
+      <mesh position-y={pole / 2} onClick={(e) => (e.stopPropagation(), onSelect())}>
+        <cylinderGeometry args={[0.09, 0.09, pole, 8]} />
         <meshBasicMaterial
           color={selected ? PALETTE.cyan : color}
           transparent
@@ -115,15 +124,15 @@ function SiteMarker({
           toneMapped={false}
         />
       </mesh>
-      <mesh position-y={6.6}>
+      <mesh position-y={pole + 0.2}>
         <octahedronGeometry args={[selected ? 0.6 : 0.4]} />
         <meshBasicMaterial color={selected ? PALETTE.cyan : color} toneMapped={false} />
       </mesh>
       {showLabel && (
         <Html
-          position={[0, 8, 0]}
+          position={[0, pole + 1.6, 0]}
           center
-          zIndexRange={[15, 0]}
+          zIndexRange={selected ? [16, 16] : [15, 0]}
           portal={labelPortal as React.RefObject<HTMLElement>}
         >
           <button

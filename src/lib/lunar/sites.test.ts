@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SITES, findSite } from "./sites";
+import { SITES, findSite, labelLevels } from "./sites";
 import { MAP_HALF_KM, kmToLatLon, latLonToKm } from "./terrain";
 
 describe("landing sites", () => {
@@ -23,5 +23,19 @@ describe("landing sites", () => {
   it("cite a source for every site", () => {
     for (const s of SITES) expect(s.ref?.url).toMatch(/^https:\/\//);
     expect(findSite("connecting-ridge")).toMatchObject({ lat: -89.53432, origin: "published" });
+  });
+});
+
+describe("label stacking", () => {
+  it("lifts labels of nearby sites to different levels and leaves isolated ones at 0", () => {
+    const levels = labelLevels([
+      { id: "a", x: 0, y: 0 },
+      { id: "b", x: 2, y: 0 },
+      { id: "c", x: 1, y: 1 },
+      { id: "far", x: 40, y: 40 },
+    ]);
+    expect([levels.get("a"), levels.get("b"), levels.get("c"), levels.get("far")]).toEqual([
+      0, 1, 2, 0,
+    ]);
   });
 });

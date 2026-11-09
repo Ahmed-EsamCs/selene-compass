@@ -16,6 +16,8 @@ export interface SiteRef {
 export interface Site {
   id: string;
   name: string;
+  /** Compact label for small screens. */
+  short: string;
   /** Selenographic latitude (°, negative = south) and east longitude (°). */
   lat: number;
   lon: number;
@@ -49,6 +51,7 @@ export const SITES: Site[] = [
   site({
     id: "peak-shackleton",
     name: "Peak near Shackleton",
+    short: "Peak/Shackleton",
     lat: -89.01701,
     lon: 126.27302,
     origin: "published",
@@ -58,6 +61,7 @@ export const SITES: Site[] = [
   site({
     id: "connecting-ridge",
     name: "Connecting Ridge",
+    short: "Conn. Ridge",
     lat: -89.53432,
     lon: 209.94767,
     origin: "published",
@@ -67,6 +71,7 @@ export const SITES: Site[] = [
   site({
     id: "shackleton-rim",
     name: "Shackleton Rim (high-light point)",
+    short: "Shackleton rim",
     lat: -89.7849,
     lon: 203.97,
     origin: "published",
@@ -76,6 +81,7 @@ export const SITES: Site[] = [
   site({
     id: "connecting-ridge-c1",
     name: "Connecting Ridge C1",
+    short: "Ridge C1",
     lat: -89.4505,
     lon: 222.84,
     origin: "published",
@@ -85,6 +91,7 @@ export const SITES: Site[] = [
   site({
     id: "connecting-ridge-c2",
     name: "Connecting Ridge C2",
+    short: "Ridge C2",
     lat: -89.3157,
     lon: 245.94,
     origin: "published",
@@ -94,6 +101,7 @@ export const SITES: Site[] = [
   site({
     id: "connecting-ridge-ext",
     name: "Connecting Ridge Extension",
+    short: "Ridge ext.",
     lat: -88.999,
     lon: 265.28,
     origin: "modelled",
@@ -103,6 +111,7 @@ export const SITES: Site[] = [
   site({
     id: "de-gerlache-rim",
     name: "de Gerlache Rim 1",
+    short: "de Gerlache",
     lat: -88.694,
     lon: 291.87,
     origin: "modelled",
@@ -112,6 +121,7 @@ export const SITES: Site[] = [
   site({
     id: "shoemaker-rim",
     name: "Shoemaker Rim",
+    short: "Shoemaker",
     lat: -88.997,
     lon: 47.0,
     origin: "modelled",
@@ -121,6 +131,7 @@ export const SITES: Site[] = [
   site({
     id: "haworth-rim",
     name: "Haworth North Rim",
+    short: "Haworth",
     lat: -88.307,
     lon: 351.32,
     origin: "modelled",
@@ -130,6 +141,7 @@ export const SITES: Site[] = [
   site({
     id: "shackleton-floor",
     name: "Shackleton Floor (PSR)",
+    short: "Shackleton PSR",
     lat: -89.67,
     lon: 129.78,
     origin: "published",
@@ -140,6 +152,27 @@ export const SITES: Site[] = [
     },
   }),
 ];
+
+/**
+ * Stack labels of nearby sites at different heights so they don't overlap: each site takes
+ * the lowest level not used by an earlier site within `radiusKm`. Returns site id → level.
+ */
+export function labelLevels(
+  sites: Pick<Site, "id" | "x" | "y">[],
+  radiusKm = 9,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  sites.forEach((s, i) => {
+    const used = new Set<number>();
+    for (const o of sites.slice(0, i)) {
+      if (Math.hypot(o.x - s.x, o.y - s.y) < radiusKm) used.add(out.get(o.id)!);
+    }
+    let level = 0;
+    while (used.has(level)) level++;
+    out.set(s.id, level);
+  });
+  return out;
+}
 
 export function findSite(id: string | null | undefined): Site | undefined {
   return SITES.find((s) => s.id === id);
