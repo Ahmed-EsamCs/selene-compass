@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowDownUp, MapPin } from "lucide-react";
 import { AppHeader } from "@/components/compass/AppHeader";
-import { ClassPill, DataSourceBadge, pct } from "@/components/compass/bits";
+import { ClassPill, DataSourceBadge, pct, SiteProvenance } from "@/components/compass/bits";
 import { useTerrain } from "@/hooks/use-terrain";
 import { metricsAt } from "@/lib/lunar/analysis";
 import { formatLatLon } from "@/lib/lunar/terrain";
@@ -74,10 +74,10 @@ function SitesPage() {
               Candidate landing sites
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Names follow publicly discussed south-pole regions; positions are approximate.
-              Elevation comes from NASA LRO LOLA when available; slope, sunlight, Earth visibility
-              and scores are modelled estimates. Scores use the filters and weights you set on the
-              Mission Map.
+              Sites use published coordinates where a source exists; otherwise the best spot this
+              app finds in the named region. Elevation is NASA LRO LOLA; slope, sunlight, Earth
+              visibility and scores are modelled estimates using the filters and weights you set on
+              the Mission Map.
             </p>
           </div>
           <DataSourceBadge />
@@ -145,6 +145,7 @@ function SitesPage() {
                       <dd>{(m.elevation * 1000).toFixed(0)}m</dd>
                     </div>
                   </dl>
+                  <SiteProvenance site={site} className="mt-3" />
                   <button
                     type="button"
                     onClick={() => view(site.id)}
@@ -179,7 +180,7 @@ function SitesPage() {
                     >
                       <td className="p-3">
                         <div className="font-medium">{site.name}</div>
-                        <div className="max-w-xs text-xs text-muted-foreground">{site.note}</div>
+                        <SiteProvenance site={site} className="max-w-sm" />
                       </td>
                       <td className="p-3 font-mono text-xs text-muted-foreground">
                         {formatLatLon(site.x, site.y)}

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FlaskConical, Satellite } from "lucide-react";
+import { BookOpenCheck, Cpu, ExternalLink, FlaskConical, Satellite } from "lucide-react";
+import type { Site } from "@/lib/lunar/sites";
 import type { SafetyClass, TerrainSource } from "@/lib/lunar/analysis";
 import { LOLA_BASE, lolaMetaSchema } from "@/lib/lunar/lola";
 import { useTerrainStatus } from "@/hooks/use-terrain";
@@ -109,4 +110,40 @@ export function pct(v: number) {
 
 export function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return <section className={cn("panel p-4", className)}>{children}</section>;
+}
+
+/** Where a landing site's coordinates come from, with a link to the source. */
+export function SiteProvenance({ site, className }: { site: Site; className?: string }) {
+  const published = site.origin === "published";
+  return (
+    <div className={cn("space-y-1 text-xs text-muted-foreground", className)}>
+      <p>{site.note}</p>
+      <p className="flex items-start gap-1.5 text-[11px]">
+        {published ? (
+          <BookOpenCheck className="mt-px size-3.5 shrink-0 text-safe" aria-hidden />
+        ) : (
+          <Cpu className="mt-px size-3.5 shrink-0 text-caution" aria-hidden />
+        )}
+        <span>
+          <span className={published ? "text-safe" : "text-caution"}>
+            {published ? "Published coordinates" : "Spot picked by this app"}
+          </span>
+          {site.ref && (
+            <>
+              {" · "}
+              <a
+                href={site.ref.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-primary hover:underline"
+              >
+                {site.ref.label}
+                <ExternalLink className="size-3" aria-hidden />
+              </a>
+            </>
+          )}
+        </span>
+      </p>
+    </div>
+  );
 }

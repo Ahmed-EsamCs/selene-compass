@@ -194,6 +194,13 @@ export function kmToLatLon(x: number, y: number): { lat: number; lon: number } {
   return { lat, lon };
 }
 
+/** Inverse of `kmToLatLon`: selenographic latitude / east longitude (degrees) → map km. */
+export function latLonToKm(lat: number, lon: number): { x: number; y: number } {
+  const d = (90 + lat) * KM_PER_DEG_LAT;
+  const r = (lon * Math.PI) / 180;
+  return { x: d * Math.sin(r), y: d * Math.cos(r) };
+}
+
 export function formatLatLon(x: number, y: number): string {
   const { lat, lon } = kmToLatLon(x, y);
   const ew = lon >= 0 ? "E" : "W";

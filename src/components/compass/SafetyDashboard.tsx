@@ -14,7 +14,7 @@ import { Slider } from "@/components/ui/slider";
 import { useSubject } from "@/hooks/use-terrain";
 import { useCompass, type ColorMode } from "@/store/compass";
 import { cameraApi } from "./scene/camera-api";
-import { ClassPill, pct, SectionTitle, useDataSource } from "./bits";
+import { ClassPill, pct, SectionTitle, SiteProvenance, useDataSource } from "./bits";
 import { LiveSkyCard } from "./LiveSkyCard";
 import { cn } from "@/lib/utils";
 
@@ -204,7 +204,7 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
           </dl>
         </div>
       </div>
-      {subject.site && <p className="text-xs text-muted-foreground">{subject.site.note}</p>}
+      {subject.site && <SiteProvenance site={subject.site} />}
 
       <LiveSkyCard data={data} point={{ x: m.x, y: m.y }} />
 

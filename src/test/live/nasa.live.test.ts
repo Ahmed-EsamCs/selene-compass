@@ -5,7 +5,12 @@
  */
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { buildTerrainFromHeights } from "@/lib/lunar/analysis";
+import {
+  buildTerrainFromHeights,
+  DEFAULT_FILTERS,
+  DEFAULT_WEIGHTS,
+  metricsAt,
+} from "@/lib/lunar/analysis";
 import { liveSky } from "@/lib/lunar/ephemeris";
 import { fetchLolaHeights } from "@/lib/lunar/lola";
 import { findSite } from "@/lib/lunar/sites";
@@ -74,6 +79,28 @@ describe.skipIf(!LIVE)("NASA LRO LOLA terrain asset (live data)", () => {
     // Shackleton's floor is a well-known permanently shadowed region.
     const idx = Math.round((-6.4 + 60) / t.cellKm) * t.size + Math.round((7.7 + 60) / t.cellKm);
     expect(t.illumination[idx]!).toBeLessThan(0.05);
+  }, 60_000);
+
+  it("agrees with NASA's published high-illumination points", async () => {
+    const { heights, meta } = await fetchLolaHeights(localFetch);
+    const t = buildTerrainFromHeights(heights, {
+      kind: "lola",
+      product: meta.product,
+      resolutionM: meta.sourceResolutionM,
+      url: "",
+      generatedAt: "",
+    });
+    // Gläser et al. 2017 report ~76–81% average illumination at these points. Our coarse
+    // 750 m horizon model should at least rank them as well lit and not hazardous.
+    for (const id of ["shackleton-rim", "connecting-ridge-c1", "connecting-ridge-c2"]) {
+      const s = findSite(id)!;
+      const m = metricsAt(t, s.x, s.y, DEFAULT_FILTERS, DEFAULT_WEIGHTS);
+      console.log(
+        `${s.name}: sun ${Math.round(m.illumination * 100)}%, slope ${m.slope.toFixed(1)}°, score ${Math.round(m.score)}`,
+      );
+      expect(m.illumination).toBeGreaterThan(0.4);
+      expect(m.cls).not.toBe("hazard");
+    }
   }, 60_000);
 
   it("combines real terrain with the real sky", async () => {
