@@ -69,7 +69,8 @@ describe.skipIf(!LIVE)("NASA LRO LOLA terrain asset (live data)", () => {
     console.log(
       `Shackleton floor ${(floor * 1000).toFixed(0)} m, peak site ${(t.heightAt(peak.x, peak.y) * 1000).toFixed(0)} m`,
     );
-    expect(t.heightAt(peak.x, peak.y) - floor).toBeGreaterThan(3);
+    // Real LOLA at 750 m: the massif stands ~2.8 km above Shackleton's floor.
+    expect(t.heightAt(peak.x, peak.y) - floor).toBeGreaterThan(2);
     // Shackleton's floor is a well-known permanently shadowed region.
     const idx = Math.round((-6.4 + 60) / t.cellKm) * t.size + Math.round((7.7 + 60) / t.cellKm);
     expect(t.illumination[idx]!).toBeLessThan(0.05);
