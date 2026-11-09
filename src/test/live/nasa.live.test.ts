@@ -24,7 +24,7 @@ const LIVE = env["LIVE_NASA"] === "1";
 /** Serve files from public/ like the deployed site does. */
 const localFetch = async (url: string) => {
   try {
-    return new Response(await readFile(`public${url}`));
+    return new Response(await readFile(`public${url.split("?")[0]}`));
   } catch {
     return new Response("missing", { status: 404 });
   }
@@ -41,8 +41,10 @@ describe.skipIf(!LIVE)("NASA JPL Horizons (live)", () => {
     );
     expect(eph.sun.length).toBeGreaterThanOrEqual(120);
     expect(eph.earth.length).toBe(eph.sun.length);
-    // At ~89.5°S the Sun never strays more than ~2.5° from the horizontal plane …
-    for (const s of eph.sun) expect(Math.abs(s.el)).toBeLessThan(2.5);
+    // The Sun's elevation is bounded by the ±1.54° solar declination plus the site's
+    // distance from the pole (≈ 1° here) …
+    const maxSunEl = 1.6 + (90 + lat);
+    for (const s of eph.sun) expect(Math.abs(s.el)).toBeLessThan(maxSunEl);
     // … and Earth stays within libration range (~±7°) of it, toward the 0° meridian.
     for (const s of eph.earth) expect(Math.abs(s.el)).toBeLessThan(8.5);
     const expectedEarthAz = (360 - lon + 360) % 360;
