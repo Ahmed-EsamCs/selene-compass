@@ -82,16 +82,17 @@ export function SafetyDashboard({ data }: { data: TerrainData | null }) {
 
       {source?.kind === "lola" ? (
         <p className="rounded-md border border-primary/30 bg-primary/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
-          <strong className="text-primary">Real NASA terrain, modelled scores.</strong> Elevation is LRO LOLA{" "}
-          {source.product} resampled to 750 m cells; Sun/Earth positions come from JPL Horizons. Slope,
-          illumination, Earth visibility and safety scores are computed by Selene Compass from that data —
-          they are estimates, not official NASA products, and must not be used for mission planning.
+          <strong className="text-primary">Real NASA terrain, modelled scores.</strong> Elevation is
+          LRO LOLA {source.product} resampled to 750 m cells; Sun/Earth positions come from JPL
+          Horizons. Slope, illumination, Earth visibility and safety scores are computed by Selene
+          Compass from that data — they are estimates, not official NASA products, and must not be
+          used for mission planning.
         </p>
       ) : (
         <p className="rounded-md border border-caution/30 bg-caution/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
-          <strong className="text-caution">Demonstration only.</strong> Scores come from procedurally
-          generated terrain and a simplified horizon model. They are not NASA measurements and must
-          not be used for mission planning.
+          <strong className="text-caution">Demonstration only.</strong> Scores come from
+          procedurally generated terrain and a simplified horizon model. They are not NASA
+          measurements and must not be used for mission planning.
         </p>
       )}
     </div>
@@ -105,11 +106,26 @@ function ScoreRing({ score, cls }: { score: number; cls: "safe" | "caution" | "h
   const c = 2 * Math.PI * r;
   const arc = c * 0.75;
   const val = (Math.max(0, Math.min(100, score)) / 100) * arc;
-  const stroke = cls === "safe" ? "stroke-safe" : cls === "caution" ? "stroke-caution" : "stroke-hazard";
+  const stroke =
+    cls === "safe" ? "stroke-safe" : cls === "caution" ? "stroke-caution" : "stroke-hazard";
   return (
-    <svg viewBox="0 0 128 128" className="size-32 shrink-0" role="img" aria-label={`Safety score ${Math.round(score)} of 100`}>
+    <svg
+      viewBox="0 0 128 128"
+      className="size-32 shrink-0"
+      role="img"
+      aria-label={`Safety score ${Math.round(score)} of 100`}
+    >
       <g transform="rotate(135 64 64)">
-        <circle cx="64" cy="64" r={r} fill="none" className="stroke-secondary" strokeWidth="9" strokeDasharray={`${arc} ${c}`} strokeLinecap="round" />
+        <circle
+          cx="64"
+          cy="64"
+          r={r}
+          fill="none"
+          className="stroke-secondary"
+          strokeWidth="9"
+          strokeDasharray={`${arc} ${c}`}
+          strokeLinecap="round"
+        />
         <circle
           cx="64"
           cy="64"
@@ -121,11 +137,28 @@ function ScoreRing({ score, cls }: { score: number; cls: "safe" | "caution" | "h
           strokeLinecap="round"
         />
       </g>
-      <circle cx="64" cy="64" r="40" fill="none" className="stroke-primary/20" strokeDasharray="2 4" />
-      <text x="64" y="64" textAnchor="middle" className="fill-foreground font-display text-[30px] font-semibold">
+      <circle
+        cx="64"
+        cy="64"
+        r="40"
+        fill="none"
+        className="stroke-primary/20"
+        strokeDasharray="2 4"
+      />
+      <text
+        x="64"
+        y="64"
+        textAnchor="middle"
+        className="fill-foreground font-display text-[30px] font-semibold"
+      >
         {Math.round(score)}
       </text>
-      <text x="64" y="84" textAnchor="middle" className="fill-muted-foreground font-display text-[9px] tracking-[0.2em]">
+      <text
+        x="64"
+        y="84"
+        textAnchor="middle"
+        className="fill-muted-foreground font-display text-[9px] tracking-[0.2em]"
+      >
         / 100
       </text>
     </svg>
@@ -155,11 +188,16 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
       <div className="hud-corner flex items-center gap-4 rounded-lg border bg-secondary/30 p-3">
         <ScoreRing score={m.score} cls={m.cls} />
         <div className="min-w-0 space-y-1.5">
-          <div className="truncate font-display text-sm font-semibold tracking-wide">{subject.label}</div>
+          <div className="truncate font-display text-sm font-semibold tracking-wide">
+            {subject.label}
+          </div>
           <ClassPill cls={m.cls} />
           <dl className="space-y-0.5 font-mono text-[11px] text-muted-foreground">
             <div>{formatLatLon(m.x, m.y)}</div>
-            <div>Elev {m.elevation >= 0 ? "+" : ""}{(m.elevation * 1000).toFixed(0)} m</div>
+            <div>
+              Elev {m.elevation >= 0 ? "+" : ""}
+              {(m.elevation * 1000).toFixed(0)} m
+            </div>
             <div>
               {m.x.toFixed(1)}, {m.y.toFixed(1)} km
             </div>
@@ -195,7 +233,11 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
               title={`Azimuth ${Math.round((i / sun.length) * 360)}° · ${Math.round(v * 100)}% of disk`}
               className={cn(
                 "flex-1 rounded-t-[1px] transition-colors",
-                i === sunIdx ? "bg-primary" : v > 0.5 ? "bg-sun/80 hover:bg-sun" : "bg-secondary hover:bg-muted-foreground/40",
+                i === sunIdx
+                  ? "bg-primary"
+                  : v > 0.5
+                    ? "bg-sun/80 hover:bg-sun"
+                    : "bg-secondary hover:bg-muted-foreground/40",
               )}
               style={{ height: `${15 + v * 85}%` }}
             />
@@ -220,7 +262,10 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
         onToggle={() => toggleMode("slope")}
       >
         <div className="relative h-3 overflow-hidden rounded-full bg-secondary">
-          <div className="absolute inset-y-0 left-0 bg-safe/70" style={{ width: `${(filters.maxSlope / 25) * 100}%` }} />
+          <div
+            className="absolute inset-y-0 left-0 bg-safe/70"
+            style={{ width: `${(filters.maxSlope / 25) * 100}%` }}
+          />
           <div
             className="absolute inset-y-0 bg-caution/70"
             style={{
@@ -228,7 +273,10 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
               width: `${((HARD_SLOPE_LIMIT_DEG - filters.maxSlope) / 25) * 100}%`,
             }}
           />
-          <div className="absolute inset-y-0 right-0 bg-hazard/70" style={{ left: `${(HARD_SLOPE_LIMIT_DEG / 25) * 100}%` }} />
+          <div
+            className="absolute inset-y-0 right-0 bg-hazard/70"
+            style={{ left: `${(HARD_SLOPE_LIMIT_DEG / 25) * 100}%` }}
+          />
           <div
             className="absolute inset-y-[-2px] w-1 rounded bg-foreground shadow transition-[left] duration-500"
             style={{ left: `calc(${Math.min(100, (m.slope / 25) * 100)}% - 2px)` }}
@@ -254,7 +302,12 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
         bar={m.comm}
         threshold={filters.minComm}
       >
-        <svg viewBox={`0 0 ${earth.length - 1} 10`} preserveAspectRatio="none" className="h-10 w-full" aria-label="Earth visibility over one libration cycle">
+        <svg
+          viewBox={`0 0 ${earth.length - 1} 10`}
+          preserveAspectRatio="none"
+          className="h-10 w-full"
+          aria-label="Earth visibility over one libration cycle"
+        >
           <path
             d={`M0 10 ${earth.map((v, i) => `L${i} ${10 - v * 9}`).join(" ")} L${earth.length - 1} 10 Z`}
             className="fill-primary/20"
@@ -310,9 +363,18 @@ function IndicatorCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className={cn("flex size-7 items-center justify-center rounded-md bg-background/60", tone)}>{icon}</span>
+          <span
+            className={cn(
+              "flex size-7 items-center justify-center rounded-md bg-background/60",
+              tone,
+            )}
+          >
+            {icon}
+          </span>
           <div>
-            <div className="font-display text-[11px] tracking-[0.12em] text-muted-foreground uppercase">{title}</div>
+            <div className="font-display text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
+              {title}
+            </div>
             <div className="font-mono text-lg leading-tight font-semibold">{value}</div>
           </div>
         </div>
@@ -324,7 +386,9 @@ function IndicatorCard({
             aria-pressed={active}
             className={cn(
               "mt-1 rounded border px-1.5 py-0.5 text-[10px] tracking-wider uppercase transition-colors",
-              active ? "border-primary bg-primary/15 text-primary" : "text-muted-foreground hover:border-primary/60 hover:text-primary",
+              active
+                ? "border-primary bg-primary/15 text-primary"
+                : "text-muted-foreground hover:border-primary/60 hover:text-primary",
             )}
           >
             {active ? "On map ✓" : "Show on map"}
@@ -333,9 +397,16 @@ function IndicatorCard({
       </div>
       {bar !== undefined && (
         <div className="relative mt-2.5 h-1.5 rounded-full bg-secondary">
-          <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${bar * 100}%` }} />
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{ width: `${bar * 100}%` }}
+          />
           {threshold !== undefined && (
-            <div className="absolute -top-1 h-3.5 w-px bg-caution" style={{ left: `${threshold * 100}%` }} title="Filter threshold" />
+            <div
+              className="absolute -top-1 h-3.5 w-px bg-caution"
+              style={{ left: `${threshold * 100}%` }}
+              title="Filter threshold"
+            />
           )}
         </div>
       )}
@@ -359,7 +430,11 @@ function WeightsSection() {
     <div>
       <SectionTitle
         action={
-          <button type="button" onClick={resetWeights} className="text-[11px] text-primary hover:underline">
+          <button
+            type="button"
+            onClick={resetWeights}
+            className="text-[11px] text-primary hover:underline"
+          >
             Reset
           </button>
         }
@@ -378,7 +453,9 @@ function WeightsSection() {
               onValueChange={([v]) => setWeight(k, (v ?? 0) / 100)}
               aria-label={`${label} weight`}
             />
-            <span className="text-right font-mono text-xs text-primary">{Math.round((weights[k] / sum) * 100)}%</span>
+            <span className="text-right font-mono text-xs text-primary">
+              {Math.round((weights[k] / sum) * 100)}%
+            </span>
           </div>
         ))}
       </div>
@@ -412,7 +489,9 @@ function Ranking({ data }: { data: TerrainData }) {
               }}
               className={cn(
                 "flex w-full items-center gap-2.5 rounded-md border px-2.5 py-2 text-left text-sm transition-colors",
-                selected === site.id ? "border-primary bg-primary/10" : "border-transparent hover:bg-accent/50",
+                selected === site.id
+                  ? "border-primary bg-primary/10"
+                  : "border-transparent hover:bg-accent/50",
               )}
             >
               <span className="w-4 font-mono text-xs text-muted-foreground">{i + 1}</span>

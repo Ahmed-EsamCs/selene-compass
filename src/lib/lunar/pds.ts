@@ -122,7 +122,9 @@ export function demLayoutFromLabel(label: PdsLabel): DemLayout {
   const scalingFactor = numberOr(label, "IMAGE.SCALING_FACTOR", 1);
   const offset = numberOr(label, "IMAGE.OFFSET", 0);
 
-  const projection = (labelValue(label, "MAP_PROJECTION_TYPE") ?? "").replace(/"/g, "").toUpperCase();
+  const projection = (labelValue(label, "MAP_PROJECTION_TYPE") ?? "")
+    .replace(/"/g, "")
+    .toUpperCase();
   if (!projection.includes("POLAR STEREOGRAPHIC")) {
     throw new Error(`Expected a POLAR STEREOGRAPHIC product, got "${projection}"`);
   }
@@ -243,7 +245,10 @@ export function makePixelReader(layout: DemLayout, rows: DataView, firstLine: nu
     if (layout.kind === "float") {
       v = layout.bytesPerSample === 4 ? rows.getFloat32(at, layout.littleEndian) : NaN;
     } else {
-      v = layout.bytesPerSample === 2 ? rows.getInt16(at, layout.littleEndian) : rows.getInt32(at, layout.littleEndian);
+      v =
+        layout.bytesPerSample === 2
+          ? rows.getInt16(at, layout.littleEndian)
+          : rows.getInt32(at, layout.littleEndian);
     }
     return layout.valueToKm(v);
   };

@@ -35,13 +35,18 @@ export async function fetchLolaHeights(fetchImpl: FetchLike = fetch, base = LOLA
   const metaRes = await fetchImpl(`${base}/meta.json`);
   if (!metaRes.ok) throw new Error(`LOLA metadata not available (HTTP ${metaRes.status})`);
   const meta = lolaMetaSchema.parse(await metaRes.json());
-  if (meta.grid.size !== GRID || Math.abs(meta.grid.halfKm - MAP_HALF_KM) > 1e-6 || Math.abs(meta.grid.cellKm - CELL_KM) > 1e-6) {
+  if (
+    meta.grid.size !== GRID ||
+    Math.abs(meta.grid.halfKm - MAP_HALF_KM) > 1e-6 ||
+    Math.abs(meta.grid.cellKm - CELL_KM) > 1e-6
+  ) {
     throw new Error("LOLA grid does not match this app version");
   }
   const binRes = await fetchImpl(`${base}/heights.f32`);
   if (!binRes.ok) throw new Error(`LOLA heights not available (HTTP ${binRes.status})`);
   const buf = await binRes.arrayBuffer();
-  if (buf.byteLength !== GRID * GRID * 4) throw new Error(`LOLA heights have the wrong size (${buf.byteLength} bytes)`);
+  if (buf.byteLength !== GRID * GRID * 4)
+    throw new Error(`LOLA heights have the wrong size (${buf.byteLength} bytes)`);
   const hash = await sha256Hex(buf);
   if (hash && hash !== meta.sha256) throw new Error("LOLA heights failed their checksum");
   const view = new DataView(buf);

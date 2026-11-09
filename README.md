@@ -2,15 +2,9 @@
 
 Build a fully functional web application named Selene Compass for NASA Space Apps.
 
-
-
 Use my uploaded dashboard image as the primary visual reference. Recreate its layout and visual identity as closely as possible.
 
-
-
 Requirements:
-
-
 
 - Dark navy and black space background.
 
@@ -32,15 +26,9 @@ Requirements:
 
 - Responsive design for mobile and desktop.
 
-
-
 Use React, Three.js, and clean modern components.
 
-
-
 Make every button functional. Clearly label demonstration data and never present simulated measurements as verified NASA data.
-
-
 
 Create a complete working web application, not just a static image or mockup.
 

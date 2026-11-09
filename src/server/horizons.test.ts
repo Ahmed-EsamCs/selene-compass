@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { clearEphemerisCache, ephemerisQuerySchema, getEphemeris, toRequest, UpstreamError } from "./horizons";
+import {
+  clearEphemerisCache,
+  ephemerisQuerySchema,
+  getEphemeris,
+  toRequest,
+  UpstreamError,
+} from "./horizons";
 
 const block = (rows: string) => `
  Date__(UT)__HR:MN, , , Azi_(a-app), Elev_(a-app),
@@ -8,9 +14,15 @@ ${rows}
 $$EOE
 `;
 const ok = (rows: string) =>
-  new Response(JSON.stringify({ signature: { source: "NASA/JPL Horizons API", version: "1.3" }, result: block(rows) }), {
-    status: 200,
-  });
+  new Response(
+    JSON.stringify({
+      signature: { source: "NASA/JPL Horizons API", version: "1.3" },
+      result: block(rows),
+    }),
+    {
+      status: 200,
+    },
+  );
 
 const query = ephemerisQuerySchema.parse({ lat: "-89.67", lon: "129.78", alt: "1.2" });
 const NOW = Date.UTC(2026, 10, 9, 21, 37);
@@ -21,7 +33,9 @@ describe("query validation", () => {
   it("applies defaults and rejects sites outside the south-pole window", () => {
     expect(query).toMatchObject({ days: 30, step: 6, alt: 1.2 });
     expect(ephemerisQuerySchema.safeParse({ lat: "-60", lon: "0" }).success).toBe(false);
-    expect(ephemerisQuerySchema.safeParse({ lat: "-89", lon: "0", days: "400" }).success).toBe(false);
+    expect(ephemerisQuerySchema.safeParse({ lat: "-89", lon: "0", days: "400" }).success).toBe(
+      false,
+    );
     expect(ephemerisQuerySchema.safeParse({ lat: "abc", lon: "0" }).success).toBe(false);
   });
 
@@ -63,7 +77,11 @@ describe("getEphemeris", () => {
   });
 
   it("turns Horizons error payloads into a 502 and does not cache the failure", async () => {
-    const bad = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ error: "Bad site" }), { status: 200 }));
+    const bad = vi
+      .fn()
+      .mockImplementation(
+        async () => new Response(JSON.stringify({ error: "Bad site" }), { status: 200 }),
+      );
     await expect(getEphemeris(query, bad, NOW)).rejects.toMatchObject({ status: 502 });
     const good = vi.fn().mockImplementation(async () => ok(" 2026-Nov-09 21:00, , , 1, 1,"));
     await expect(getEphemeris(query, good, NOW)).resolves.toBeTruthy();

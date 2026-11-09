@@ -21,7 +21,9 @@ function asset(mutate?: (meta: Record<string, unknown>, bin: Buffer) => void) {
   const fetchImpl = async (url: string) =>
     url.endsWith("meta.json")
       ? new Response(JSON.stringify(meta))
-      : new Response(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength) as ArrayBuffer);
+      : new Response(
+          bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength) as ArrayBuffer,
+        );
   return { heights, fetchImpl };
 }
 

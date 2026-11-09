@@ -19,10 +19,7 @@ export const ephemerisQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(30).default(30),
   step: z.coerce.number().int().min(1).max(24).default(6),
   /** Optional ISO start; defaults to the current UTC hour. */
-  start: z
-    .string()
-    .datetime({ offset: true })
-    .optional(),
+  start: z.string().datetime({ offset: true }).optional(),
 });
 export type EphemerisQuery = z.infer<typeof ephemerisQuerySchema>;
 
@@ -82,7 +79,10 @@ async function fetchBody(body: Body, req: EphemerisRequest, fetchImpl: FetchLike
       const json = horizonsEnvelope.safeParse(await res.json().catch(() => null));
       if (!json.success) throw new UpstreamError("Horizons returned an unexpected payload", 502);
       if (!res.ok || json.data.error || json.data.message) {
-        throw new UpstreamError(`Horizons rejected the query: ${json.data.error ?? json.data.message ?? res.status}`, 502);
+        throw new UpstreamError(
+          `Horizons rejected the query: ${json.data.error ?? json.data.message ?? res.status}`,
+          502,
+        );
       }
       const rows = parseHorizonsObserver(json.data.result ?? "");
       return { rows, version: json.data.signature?.version ?? "unknown" };
@@ -94,10 +94,17 @@ async function fetchBody(body: Body, req: EphemerisRequest, fetchImpl: FetchLike
     await new Promise((r) => setTimeout(r, 400));
   }
   if (lastErr instanceof UpstreamError) throw lastErr;
-  throw new UpstreamError(`Could not reach NASA JPL Horizons (${lastErr instanceof Error ? lastErr.message : "network error"})`, 504);
+  throw new UpstreamError(
+    `Could not reach NASA JPL Horizons (${lastErr instanceof Error ? lastErr.message : "network error"})`,
+    504,
+  );
 }
 
-export async function getEphemeris(q: EphemerisQuery, fetchImpl: FetchLike = fetch, now = Date.now()): Promise<EphemerisResponse> {
+export async function getEphemeris(
+  q: EphemerisQuery,
+  fetchImpl: FetchLike = fetch,
+  now = Date.now(),
+): Promise<EphemerisResponse> {
   const req = toRequest(q, now);
   const key = `${req.latDeg},${req.lonDeg},${req.altKm},${req.start.toISOString()},${req.days},${req.stepHours}`;
   const hit = cache.get(key);
@@ -127,4 +134,3 @@ export async function getEphemeris(q: EphemerisQuery, fetchImpl: FetchLike = fet
   if (cache.size > MAX_ENTRIES) cache.delete(cache.keys().next().value!);
   return value;
 }
-

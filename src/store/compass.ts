@@ -88,7 +88,6 @@ export const useCompass = create<CompassState>((set) => ({
   selectSite: (selectedSiteId, opts) =>
     set({ selectedSiteId, probe: null, pendingFocus: !!opts?.focusOnLoad }),
   clearPendingFocus: () => set({ pendingFocus: false }),
-  setProbe: (probe) =>
-    set((s) => ({ probe, selectedSiteId: probe ? null : s.selectedSiteId })),
+  setProbe: (probe) => set((s) => ({ probe, selectedSiteId: probe ? null : s.selectedSiteId })),
   setHover: (hover) => set({ hover }),
 }));

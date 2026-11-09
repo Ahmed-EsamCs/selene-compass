@@ -49,7 +49,10 @@ const SOURCES = [
     href: "https://imbrium.mit.edu/BROWSE/LOLA_GDR/POLAR/SOUTH_POLE",
   },
   { label: "NASA/JPL Horizons ephemeris system", href: "https://ssd.jpl.nasa.gov/horizons/" },
-  { label: "NASA PGDA — South pole illumination & topography products", href: "https://pgda.gsfc.nasa.gov/" },
+  {
+    label: "NASA PGDA — South pole illumination & topography products",
+    href: "https://pgda.gsfc.nasa.gov/",
+  },
   { label: "NASA Moon Trek", href: "https://trek.nasa.gov/moon/" },
   { label: "NASA Artemis program", href: "https://www.nasa.gov/humans-in-space/artemis/" },
 ];
@@ -69,14 +72,17 @@ function AboutPage() {
           <div className="text-sm leading-relaxed">
             <p className="font-semibold text-caution">Real NASA inputs — modelled outputs.</p>
             <p className="mt-1 text-muted-foreground">
-              Selene Compass was built for the NASA Space Apps Challenge. Elevation comes from NASA&apos;s
-              Lunar Reconnaissance Orbiter laser altimeter (LOLA) and live Sun/Earth positions from NASA
-              JPL Horizons. Slope, illumination, Earth visibility and safety scores are computed by this
-              app with simplified models over a 120 × 120 km window at 750 m resolution; they are
-              estimates, not official NASA products, and must not be used for mission planning. If the
-              LOLA data cannot be loaded, the app falls back to procedural terrain and says so.
+              Selene Compass was built for the NASA Space Apps Challenge. Elevation comes from
+              NASA&apos;s Lunar Reconnaissance Orbiter laser altimeter (LOLA) and live Sun/Earth
+              positions from NASA JPL Horizons. Slope, illumination, Earth visibility and safety
+              scores are computed by this app with simplified models over a 120 × 120 km window at
+              750 m resolution; they are estimates, not official NASA products, and must not be used
+              for mission planning. If the LOLA data cannot be loaded, the app falls back to
+              procedural terrain and says so.
             </p>
-            <div className="mt-3"><DataSourceBadge /></div>
+            <div className="mt-3">
+              <DataSourceBadge />
+            </div>
           </div>
         </div>
 
@@ -95,16 +101,16 @@ function AboutPage() {
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li>
               <span className="text-foreground">Safety score</span> = weighted average of the slope,
-              sunlight (full credit at 70%) and Earth-visibility (full credit at 60%) factors, 0–100.
-              You can change the weights on the map page.
+              sunlight (full credit at 70%) and Earth-visibility (full credit at 60%) factors,
+              0–100. You can change the weights on the map page.
             </li>
             <li>
               <span className="text-hazard">Hazardous</span>: slope above 15°, score below 40, or
               permanently shadowed.
             </li>
             <li>
-              <span className="text-safe">Safe</span>: passes every filter you set (max slope, minimum
-              sunlight, minimum Earth visibility, minimum score).
+              <span className="text-safe">Safe</span>: passes every filter you set (max slope,
+              minimum sunlight, minimum Earth visibility, minimum score).
             </li>
             <li>
               <span className="text-caution">Caution</span>: everything in between.

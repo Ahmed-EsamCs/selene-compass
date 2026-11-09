@@ -38,7 +38,11 @@ export function Terrain({ data, classification, colorMode, layers, exaggeration 
         positions[k * 3 + 2] = -y;
         const t = (data.height[k]! - data.minH) / span;
         const grain = 0.06 * valueNoise(x * 1.7, y * 1.7, 7);
-        const c = mix(PALETTE.regolithLow, PALETTE.regolithHigh, Math.min(1, t * 0.9 + 0.1 + grain));
+        const c = mix(
+          PALETTE.regolithLow,
+          PALETTE.regolithHigh,
+          Math.min(1, t * 0.9 + 0.1 + grain),
+        );
         colors[k * 3] = lin(c[0]);
         colors[k * 3 + 1] = lin(c[1]);
         colors[k * 3 + 2] = lin(c[2]);
@@ -127,7 +131,8 @@ export function Terrain({ data, classification, colorMode, layers, exaggeration 
   const onMove = (e: ThreeEvent<PointerEvent>) => {
     const m = toMap(e.point);
     const cell =
-      Math.round((m.y + data.halfKm) / data.cellKm) * n + Math.round((m.x + data.halfKm) / data.cellKm);
+      Math.round((m.y + data.halfKm) / data.cellKm) * n +
+      Math.round((m.x + data.halfKm) / data.cellKm);
     if (cell !== lastCell.current) {
       lastCell.current = cell;
       setHover(m);

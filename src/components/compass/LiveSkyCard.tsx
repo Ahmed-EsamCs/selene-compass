@@ -75,7 +75,13 @@ function Strip({ samples, tone, label }: { samples: LiveSample[]; tone: string; 
 }
 
 /** Real-time Sun/Earth geometry (NASA JPL Horizons) tested against the terrain horizon. */
-export function LiveSkyCard({ data, point }: { data: TerrainData; point: { x: number; y: number } }) {
+export function LiveSkyCard({
+  data,
+  point,
+}: {
+  data: TerrainData;
+  point: { x: number; y: number };
+}) {
   const { sky, lonDeg, isLoading, error, refetch, data: eph } = useLiveSky(data, point);
   const setSunPhase = useCompass((s) => s.setSunPhase);
   const now = Date.now();
@@ -107,8 +113,8 @@ export function LiveSkyCard({ data, point }: { data: TerrainData; point: { x: nu
       {error && !isLoading && (
         <div className="mt-2 rounded-md border border-caution/40 bg-caution/5 p-2.5 text-[11px] text-muted-foreground">
           <p>
-            <strong className="text-caution">Live ephemeris unavailable.</strong> {error.message}. The modelled
-            indicators above still work.
+            <strong className="text-caution">Live ephemeris unavailable.</strong> {error.message}.
+            The modelled indicators above still work.
           </p>
           <button
             type="button"
@@ -129,7 +135,11 @@ export function LiveSkyCard({ data, point }: { data: TerrainData; point: { x: nu
             up={sky.sunNow.visible >= 0.5}
             upText="Sunlit"
             downText="In shadow"
-            next={sky.nextSunChange ? `${sky.nextSunChange.to === "sunrise" ? "Sunrise" : "Sunset"} ${rel(sky.nextSunChange.t)}` : null}
+            next={
+              sky.nextSunChange
+                ? `${sky.nextSunChange.to === "sunrise" ? "Sunrise" : "Sunset"} ${rel(sky.nextSunChange.t)}`
+                : null
+            }
           />
           <Row
             icon={<Earth className="size-3.5 text-primary" />}
@@ -138,18 +148,31 @@ export function LiveSkyCard({ data, point }: { data: TerrainData; point: { x: nu
             up={sky.earthNow.visible >= 0.5}
             upText="Link possible"
             downText="Below horizon"
-            next={sky.nextEarthChange ? `Earth ${sky.nextEarthChange.to}s ${rel(sky.nextEarthChange.t)}` : null}
+            next={
+              sky.nextEarthChange
+                ? `Earth ${sky.nextEarthChange.to}s ${rel(sky.nextEarthChange.t)}`
+                : null
+            }
           />
 
           <div className="space-y-1.5 pt-1">
             <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
               <span>Next {Math.round((eph.sun.length * eph.stepHours) / 24)} days</span>
               <span>
-                <span className="text-sun">Sun {pct(sky.sunlitShare)}</span> · <span className="text-primary">Earth {pct(sky.earthShare)}</span>
+                <span className="text-sun">Sun {pct(sky.sunlitShare)}</span> ·{" "}
+                <span className="text-primary">Earth {pct(sky.earthShare)}</span>
               </span>
             </div>
-            <Strip samples={sky.sun} tone="bg-sun/80" label={`Sunlit ${pct(sky.sunlitShare)} of the next month`} />
-            <Strip samples={sky.earth} tone="bg-primary/80" label={`Earth in view ${pct(sky.earthShare)} of the next month`} />
+            <Strip
+              samples={sky.sun}
+              tone="bg-sun/80"
+              label={`Sunlit ${pct(sky.sunlitShare)} of the next month`}
+            />
+            <Strip
+              samples={sky.earth}
+              tone="bg-primary/80"
+              label={`Earth in view ${pct(sky.earthShare)} of the next month`}
+            />
           </div>
 
           <button
@@ -160,8 +183,8 @@ export function LiveSkyCard({ data, point }: { data: TerrainData; point: { x: nu
             <Sunrise className="size-3.5" /> Set map sun to real position now
           </button>
           <p className="text-[10px] leading-relaxed text-muted-foreground">
-            Positions from NASA JPL Horizons (fetched {rel(Date.parse(eph.generatedAt))}); visibility is
-            tested against the terrain horizon by Selene Compass.
+            Positions from NASA JPL Horizons (fetched {rel(Date.parse(eph.generatedAt))});
+            visibility is tested against the terrain horizon by Selene Compass.
           </p>
         </div>
       )}

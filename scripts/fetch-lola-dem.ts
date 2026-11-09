@@ -24,7 +24,8 @@ import {
 import { CELL_KM, GRID, MAP_HALF_KM, gridToKm } from "../src/lib/lunar/terrain";
 
 const args = new Map<string, string>();
-for (let i = 2; i < process.argv.length; i += 2) args.set(process.argv[i]!.replace(/^--/, ""), process.argv[i + 1]!);
+for (let i = 2; i < process.argv.length; i += 2)
+  args.set(process.argv[i]!.replace(/^--/, ""), process.argv[i + 1]!);
 
 const PRODUCTS = (args.get("product") ?? "LDEM_80S_80M,LDEM_75S_240M").split(",");
 const OUT_DIR = args.get("out") ?? "public/data/lola-south-pole";
@@ -36,7 +37,8 @@ const MIRRORS = [
   (p: string, ext: string) => `https://imbrium.mit.edu/DATA/LOLA_GDR/POLAR/IMG/${p}.${ext}`,
 ];
 
-const UA = "SeleneCompass-data-pipeline/1.0 (+https://github.com/Ahmed-EsamCs/lunar-south-pole-compass)";
+const UA =
+  "SeleneCompass-data-pipeline/1.0 (+https://github.com/Ahmed-EsamCs/lunar-south-pole-compass)";
 
 async function fetchWithRetry(url: string, init: RequestInit = {}, tries = 3): Promise<Response> {
   let last: unknown;
@@ -63,7 +65,8 @@ async function readRange(url: string, start: number, end: number): Promise<Uint8
   const res = await fetchWithRetry(url, { headers: { range: `bytes=${start}-${end - 1}` } });
   if (res.status === 206) {
     const buf = new Uint8Array(await res.arrayBuffer());
-    if (buf.byteLength !== end - start) throw new Error(`Short range read: ${buf.byteLength} of ${end - start}`);
+    if (buf.byteLength !== end - start)
+      throw new Error(`Short range read: ${buf.byteLength} of ${end - start}`);
     return buf;
   }
   console.warn("  server ignored Range; streaming the file and keeping the needed slice");
@@ -112,9 +115,15 @@ async function loadProduct(product: string): Promise<Loaded> {
       const rowBytes = layout.samples * layout.bytesPerSample;
       const start = layout.headerBytes + first * rowBytes;
       const end = layout.headerBytes + (last + 1) * rowBytes;
-      console.log(`  reading lines ${first}–${last} (${((end - start) / 1e6).toFixed(1)} MB) from ${imageUrl}`);
+      console.log(
+        `  reading lines ${first}–${last} (${((end - start) / 1e6).toFixed(1)} MB) from ${imageUrl}`,
+      );
       const bytes = await readRange(imageUrl, start, end);
-      const read = makePixelReader(layout, new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), first);
+      const read = makePixelReader(
+        layout,
+        new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
+        first,
+      );
       const heights = resampleToGrid(layout, read);
       return { product, labelUrl, imageUrl, layout, heights };
     } catch (e) {
@@ -144,7 +153,10 @@ function validate(h: Float32Array) {
   let rimMax = -Infinity;
   for (let a = 0; a < 360; a += 10) {
     const r = 10.5;
-    rimMax = Math.max(rimMax, at(7.7 + r * Math.sin((a * Math.PI) / 180), -6.4 + r * Math.cos((a * Math.PI) / 180)));
+    rimMax = Math.max(
+      rimMax,
+      at(7.7 + r * Math.sin((a * Math.PI) / 180), -6.4 + r * Math.cos((a * Math.PI) / 180)),
+    );
   }
   const shackletonDepth = rimMax - floor;
   const checks = {
@@ -177,11 +189,20 @@ async function main() {
   if (!loaded || !validation) throw new Error("No LOLA product could be downloaded and validated");
 
   await mkdir(OUT_DIR, { recursive: true });
-  const bin = Buffer.from(loaded.heights.buffer, loaded.heights.byteOffset, loaded.heights.byteLength);
+  const bin = Buffer.from(
+    loaded.heights.buffer,
+    loaded.heights.byteOffset,
+    loaded.heights.byteLength,
+  );
   const sha256 = createHash("sha256").update(bin).digest("hex");
-  const previous = await readFile(path.join(OUT_DIR, "meta.json"), "utf8").then(JSON.parse, () => null);
+  const previous = await readFile(path.join(OUT_DIR, "meta.json"), "utf8").then(
+    JSON.parse,
+    () => null,
+  );
   if (previous?.sha256 === sha256 && previous?.product === loaded.product) {
-    console.log(`✓ ${OUT_DIR} already up to date (${loaded.product}, sha256 ${sha256.slice(0, 12)}…)`);
+    console.log(
+      `✓ ${OUT_DIR} already up to date (${loaded.product}, sha256 ${sha256.slice(0, 12)}…)`,
+    );
     return;
   }
   await writeFile(path.join(OUT_DIR, "heights.f32"), bin);
@@ -197,8 +218,14 @@ async function main() {
     referenceRadiusKm: loaded.layout.radiusKm,
     units: "km above reference radius",
     encoding: "float32-le",
-    grid: { size: GRID, cellKm: CELL_KM, halfKm: MAP_HALF_KM, rowMajor: "iy (y from -halfKm), then ix (x from -halfKm)" },
-    frame: "+y toward 0°E (Earth-facing), +x toward 90°E; distance from pole maps linearly to latitude",
+    grid: {
+      size: GRID,
+      cellKm: CELL_KM,
+      halfKm: MAP_HALF_KM,
+      rowMajor: "iy (y from -halfKm), then ix (x from -halfKm)",
+    },
+    frame:
+      "+y toward 0°E (Earth-facing), +x toward 90°E; distance from pole maps linearly to latitude",
     minKm: +validation.min.toFixed(4),
     maxKm: +validation.max.toFixed(4),
     sha256,

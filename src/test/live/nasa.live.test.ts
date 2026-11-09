@@ -12,7 +12,8 @@ import { findSite } from "@/lib/lunar/sites";
 import { kmToLatLon } from "@/lib/lunar/terrain";
 import { ephemerisQuerySchema, getEphemeris } from "@/server/horizons";
 
-const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
+const env =
+  (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
 const LIVE = env["LIVE_NASA"] === "1";
 
 /** Serve files from public/ like the deployed site does. */
@@ -28,34 +29,34 @@ describe.skipIf(!LIVE)("NASA JPL Horizons (live)", () => {
   const peak = findSite("peak-shackleton")!;
   const { lat, lon } = kmToLatLon(peak.x, peak.y);
 
-  it(
-    "returns a month of Sun and Earth positions for a south-pole site",
-    async () => {
-      const eph = await getEphemeris(ephemerisQuerySchema.parse({ lat, lon, alt: 1.5 }));
-      console.log(`Horizons v${eph.source.version}: ${eph.sun.length} sun / ${eph.earth.length} earth samples`);
-      expect(eph.sun.length).toBeGreaterThanOrEqual(120);
-      expect(eph.earth.length).toBe(eph.sun.length);
-      // At ~89.5°S the Sun never strays more than ~2.5° from the horizontal plane …
-      for (const s of eph.sun) expect(Math.abs(s.el)).toBeLessThan(2.5);
-      // … and Earth stays within libration range (~±7°) of it, toward the 0° meridian.
-      for (const s of eph.earth) expect(Math.abs(s.el)).toBeLessThan(8.5);
-      const expectedEarthAz = (360 - lon + 360) % 360;
-      for (const s of eph.earth) {
-        const d = Math.abs(((s.az - expectedEarthAz + 540) % 360) - 180);
-        expect(d).toBeLessThan(15);
-      }
-      // The Sun goes all the way around the horizon over a lunar day.
-      const azs = new Set(eph.sun.map((s) => Math.floor(s.az / 45)));
-      expect(azs.size).toBe(8);
-    },
-    90_000,
-  );
+  it("returns a month of Sun and Earth positions for a south-pole site", async () => {
+    const eph = await getEphemeris(ephemerisQuerySchema.parse({ lat, lon, alt: 1.5 }));
+    console.log(
+      `Horizons v${eph.source.version}: ${eph.sun.length} sun / ${eph.earth.length} earth samples`,
+    );
+    expect(eph.sun.length).toBeGreaterThanOrEqual(120);
+    expect(eph.earth.length).toBe(eph.sun.length);
+    // At ~89.5°S the Sun never strays more than ~2.5° from the horizontal plane …
+    for (const s of eph.sun) expect(Math.abs(s.el)).toBeLessThan(2.5);
+    // … and Earth stays within libration range (~±7°) of it, toward the 0° meridian.
+    for (const s of eph.earth) expect(Math.abs(s.el)).toBeLessThan(8.5);
+    const expectedEarthAz = (360 - lon + 360) % 360;
+    for (const s of eph.earth) {
+      const d = Math.abs(((s.az - expectedEarthAz + 540) % 360) - 180);
+      expect(d).toBeLessThan(15);
+    }
+    // The Sun goes all the way around the horizon over a lunar day.
+    const azs = new Set(eph.sun.map((s) => Math.floor(s.az / 45)));
+    expect(azs.size).toBe(8);
+  }, 90_000);
 });
 
 describe.skipIf(!LIVE)("NASA LRO LOLA terrain asset (live data)", () => {
   it("loads, verifies and shows real south-pole topography", async () => {
     const { heights, meta } = await fetchLolaHeights(localFetch);
-    console.log(`LOLA ${meta.product} @ ${meta.sourceResolutionM} m/px, generated ${meta.generatedAt}`);
+    console.log(
+      `LOLA ${meta.product} @ ${meta.sourceResolutionM} m/px, generated ${meta.generatedAt}`,
+    );
     const t = buildTerrainFromHeights(heights, {
       kind: "lola",
       product: meta.product,
@@ -65,7 +66,9 @@ describe.skipIf(!LIVE)("NASA LRO LOLA terrain asset (live data)", () => {
     });
     const floor = t.heightAt(7.7, -6.4);
     const peak = findSite("peak-shackleton")!;
-    console.log(`Shackleton floor ${(floor * 1000).toFixed(0)} m, peak site ${(t.heightAt(peak.x, peak.y) * 1000).toFixed(0)} m`);
+    console.log(
+      `Shackleton floor ${(floor * 1000).toFixed(0)} m, peak site ${(t.heightAt(peak.x, peak.y) * 1000).toFixed(0)} m`,
+    );
     expect(t.heightAt(peak.x, peak.y) - floor).toBeGreaterThan(3);
     // Shackleton's floor is a well-known permanently shadowed region.
     const idx = Math.round((-6.4 + 60) / t.cellKm) * t.size + Math.round((7.7 + 60) / t.cellKm);
@@ -74,10 +77,18 @@ describe.skipIf(!LIVE)("NASA LRO LOLA terrain asset (live data)", () => {
 
   it("combines real terrain with the real sky", async () => {
     const { heights, meta } = await fetchLolaHeights(localFetch);
-    const t = buildTerrainFromHeights(heights, { kind: "lola", product: meta.product, resolutionM: 80, url: "", generatedAt: "" });
+    const t = buildTerrainFromHeights(heights, {
+      kind: "lola",
+      product: meta.product,
+      resolutionM: 80,
+      url: "",
+      generatedAt: "",
+    });
     const site = findSite("connecting-ridge")!;
     const { lat, lon } = kmToLatLon(site.x, site.y);
-    const eph = await getEphemeris(ephemerisQuerySchema.parse({ lat, lon, alt: t.heightAt(site.x, site.y) }));
+    const eph = await getEphemeris(
+      ephemerisQuerySchema.parse({ lat, lon, alt: t.heightAt(site.x, site.y) }),
+    );
     const sky = liveSky(t, site.x, site.y, eph)!;
     console.log(
       `Connecting Ridge now: sun el ${sky.sunNow.el.toFixed(2)}° vs horizon ${sky.sunNow.horizonDeg.toFixed(2)}°, ` +

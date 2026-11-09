@@ -6,7 +6,13 @@
  * (server side) so the browser never talks to Horizons directly.
  */
 import { z } from "zod";
-import { EARTH_RADIUS_DEG, SUN_RADIUS_DEG, diskVisible, horizonAngle, type TerrainData } from "./analysis";
+import {
+  EARTH_RADIUS_DEG,
+  SUN_RADIUS_DEG,
+  diskVisible,
+  horizonAngle,
+  type TerrainData,
+} from "./analysis";
 import { kmToLatLon } from "./terrain";
 
 export const HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api";
@@ -79,16 +85,37 @@ export function horizonsUrl(body: Body, req: EphemerisRequest): string {
 }
 
 const MONTHS: Record<string, number> = {
-  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  May: 4,
+  Jun: 5,
+  Jul: 6,
+  Aug: 7,
+  Sep: 8,
+  Oct: 9,
+  Nov: 10,
+  Dec: 11,
 };
 
 /** Parse `2026-Nov-09 21:00`, `2026-Nov-09 21:00:00.000` or `2026-11-09 21:00` as UTC. */
 export function parseHorizonsDate(s: string): number {
-  const m = /(\d{4})-([A-Za-z]{3}|\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?/.exec(s.trim());
+  const m = /(\d{4})-([A-Za-z]{3}|\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?/.exec(
+    s.trim(),
+  );
   if (!m) return NaN;
   const month = /^\d+$/.test(m[2]!) ? Number(m[2]) - 1 : MONTHS[m[2]!];
   if (month === undefined) return NaN;
-  return Date.UTC(Number(m[1]), month, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] ?? 0), Math.round(Number(m[7] ?? 0) * 1000));
+  return Date.UTC(
+    Number(m[1]),
+    month,
+    Number(m[3]),
+    Number(m[4]),
+    Number(m[5]),
+    Number(m[6] ?? 0),
+    Math.round(Number(m[7] ?? 0) * 1000),
+  );
 }
 
 export class HorizonsError extends Error {}
@@ -105,7 +132,9 @@ export function parseHorizonsObserver(result: string): SkySample[] {
     throw new HorizonsError(`Horizons returned no ephemeris${hint ? `: ${hint.trim()}` : ""}`);
   }
   const before = result.slice(0, soe).split("\n");
-  const header = [...before].reverse().find((l) => /Date/.test(l) && /Azi/i.test(l) && /Elev/i.test(l));
+  const header = [...before]
+    .reverse()
+    .find((l) => /Date/.test(l) && /Azi/i.test(l) && /Elev/i.test(l));
   const cols = header?.split(",").map((c) => c.trim()) ?? [];
   let azCol = cols.findIndex((c) => /^Azi/i.test(c));
   let elCol = cols.findIndex((c) => /^Elev/i.test(c));
@@ -117,7 +146,9 @@ export function parseHorizonsObserver(result: string): SkySample[] {
     const t = parseHorizonsDate(parts[0] ?? "");
     if (azCol < 0 || elCol < 0) {
       // No header found: azimuth and elevation are the last two numeric columns.
-      const nums = parts.map((p, i) => (p !== "" && Number.isFinite(Number(p)) ? i : -1)).filter((i) => i > 0);
+      const nums = parts
+        .map((p, i) => (p !== "" && Number.isFinite(Number(p)) ? i : -1))
+        .filter((i) => i > 0);
       azCol = nums.at(-2) ?? -1;
       elCol = nums.at(-1) ?? -1;
     }
@@ -180,7 +211,13 @@ function interpolate(samples: SkySample[], t: number): SkySample {
 }
 
 /** Evaluate real ephemeris against the (LOLA or simulated) terrain horizon at map point (x, y). */
-export function liveSky(t: TerrainData, x: number, y: number, eph: Pick<EphemerisResponse, "sun" | "earth">, now = Date.now()): LiveSky | null {
+export function liveSky(
+  t: TerrainData,
+  x: number,
+  y: number,
+  eph: Pick<EphemerisResponse, "sun" | "earth">,
+  now = Date.now(),
+): LiveSky | null {
   if (!eph.sun.length || !eph.earth.length) return null;
   const { lon } = kmToLatLon(x, y);
   const judge = (s: SkySample, radius: number): LiveSample => {

@@ -30,7 +30,18 @@ export function ramp(stops: RGB[], t: number): [number, number, number] {
 
 export const RAMPS = {
   slope: [PALETTE.safe, [0.85, 0.9, 0.3], PALETTE.caution, PALETTE.hazard, [0.55, 0.08, 0.15]],
-  illumination: [[0.05, 0.07, 0.25], [0.25, 0.2, 0.55], [0.85, 0.55, 0.2], [1, 0.95, 0.65]],
+  illumination: [
+    [0.05, 0.07, 0.25],
+    [0.25, 0.2, 0.55],
+    [0.85, 0.55, 0.2],
+    [1, 0.95, 0.65],
+  ],
   comm: [[0.06, 0.08, 0.2], [0.1, 0.3, 0.55], PALETTE.cyanRGB, [0.85, 1, 1]],
-  elevation: [[0.12, 0.1, 0.4], [0.1, 0.45, 0.6], [0.45, 0.75, 0.45], [0.92, 0.85, 0.55], [1, 1, 1]],
+  elevation: [
+    [0.12, 0.1, 0.4],
+    [0.1, 0.45, 0.6],
+    [0.45, 0.75, 0.45],
+    [0.92, 0.85, 0.55],
+    [1, 1, 1],
+  ],
 } satisfies Record<string, RGB[]>;

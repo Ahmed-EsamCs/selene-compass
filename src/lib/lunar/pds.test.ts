@@ -10,7 +10,14 @@ import {
 import { CELL_KM, GRID, MAP_HALF_KM, gridToKm, kmToLatLon } from "./terrain";
 
 /** Shaped like the real LOLA polar LDEM labels (PDS3 ODL). */
-function makeLabel(opts: { size: number; scaleM: number; type?: string; bits?: number; unit?: string; offset?: number }) {
+function makeLabel(opts: {
+  size: number;
+  scaleM: number;
+  type?: string;
+  bits?: number;
+  unit?: string;
+  offset?: number;
+}) {
   const c = opts.size / 2 - 0.5;
   return `PDS_VERSION_ID       = "PDS3"
 RECORD_TYPE          = FIXED_LENGTH
@@ -43,7 +50,8 @@ END
 }
 
 /** A known synthetic surface: a tilted plane plus a bowl at Shackleton's position. */
-const truth = (x: number, y: number) => 0.01 * x - 0.02 * y - 3 * Math.exp(-((x - 7.7) ** 2 + (y + 6.4) ** 2) / 40);
+const truth = (x: number, y: number) =>
+  0.01 * x - 0.02 * y - 3 * Math.exp(-((x - 7.7) ** 2 + (y + 6.4) ** 2) / 40);
 
 /** Render the truth into a synthetic south polar stereographic product. */
 function synthProduct(size: number, scaleM: number) {
@@ -71,14 +79,29 @@ describe("PDS label parsing", () => {
     expect(label.values["IMAGE.LINES"]).toBe("100");
     expect(label.values["IMAGE.DESCRIPTION"]).toContain("equals sign");
     const layout = demLayoutFromLabel(label);
-    expect(layout).toMatchObject({ lines: 100, samples: 100, kind: "float", littleEndian: true, headerBytes: 0 });
+    expect(layout).toMatchObject({
+      lines: 100,
+      samples: 100,
+      kind: "float",
+      littleEndian: true,
+      headerBytes: 0,
+    });
     expect(layout.mapScaleKm).toBeCloseTo(0.08, 9);
     expect(layout.radiusKm).toBe(1737.4);
   });
 
   it("decodes 16-bit integer products scaled to metres of radius", () => {
     const layout = demLayoutFromLabel(
-      parsePdsLabel(makeLabel({ size: 4, scaleM: 240, type: "LSB_INTEGER", bits: 16, unit: "METER", offset: 1737400 })),
+      parsePdsLabel(
+        makeLabel({
+          size: 4,
+          scaleM: 240,
+          type: "LSB_INTEGER",
+          bits: 16,
+          unit: "METER",
+          offset: 1737400,
+        }),
+      ),
     );
     // 2000 counts × 0.5 m + 1737400 m → +1.0 km above the reference sphere
     expect(layout.valueToKm(2000)).toBeCloseTo(1.0, 9);
@@ -88,7 +111,10 @@ describe("PDS label parsing", () => {
   });
 
   it("rejects non-polar products", () => {
-    const text = makeLabel({ size: 4, scaleM: 80 }).replace("POLAR STEREOGRAPHIC", "SIMPLE CYLINDRICAL");
+    const text = makeLabel({ size: 4, scaleM: 80 }).replace(
+      "POLAR STEREOGRAPHIC",
+      "SIMPLE CYLINDRICAL",
+    );
     expect(() => demLayoutFromLabel(parsePdsLabel(text))).toThrow(/POLAR STEREOGRAPHIC/);
   });
 });

@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { create } from "zustand";
-import { classifyGrid, metricsAt, type TerrainData, type TerrainSource } from "@/lib/lunar/analysis";
+import {
+  classifyGrid,
+  metricsAt,
+  type TerrainData,
+  type TerrainSource,
+} from "@/lib/lunar/analysis";
 import { loadTerrain } from "@/lib/lunar/lola";
 import { findSite } from "@/lib/lunar/sites";
 import { useCompass } from "@/store/compass";

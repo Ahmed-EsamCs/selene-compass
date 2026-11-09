@@ -108,14 +108,24 @@ function SiteMarker({
       </mesh>
       <mesh position-y={3.2} onClick={(e) => (e.stopPropagation(), onSelect())}>
         <cylinderGeometry args={[0.09, 0.09, 6.4, 8]} />
-        <meshBasicMaterial color={selected ? PALETTE.cyan : color} transparent opacity={0.85} toneMapped={false} />
+        <meshBasicMaterial
+          color={selected ? PALETTE.cyan : color}
+          transparent
+          opacity={0.85}
+          toneMapped={false}
+        />
       </mesh>
       <mesh position-y={6.6}>
         <octahedronGeometry args={[selected ? 0.6 : 0.4]} />
         <meshBasicMaterial color={selected ? PALETTE.cyan : color} toneMapped={false} />
       </mesh>
       {showLabel && (
-        <Html position={[0, 8, 0]} center zIndexRange={[15, 0]} portal={labelPortal as React.RefObject<HTMLElement>}>
+        <Html
+          position={[0, 8, 0]}
+          center
+          zIndexRange={[15, 0]}
+          portal={labelPortal as React.RefObject<HTMLElement>}
+        >
           <button
             type="button"
             onClick={onSelect}

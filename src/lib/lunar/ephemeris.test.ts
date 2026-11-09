@@ -56,7 +56,9 @@ describe("Horizons query", () => {
   it("formats and parses Horizons dates as UTC", () => {
     expect(horizonsTime(new Date(Date.UTC(2026, 0, 5, 3, 7)))).toBe("2026-01-05 03:07");
     expect(parseHorizonsDate("2026-Nov-09 06:00")).toBe(Date.UTC(2026, 10, 9, 6));
-    expect(parseHorizonsDate("2026-Nov-09 06:00:30.500")).toBe(Date.UTC(2026, 10, 9, 6, 0, 30, 500));
+    expect(parseHorizonsDate("2026-Nov-09 06:00:30.500")).toBe(
+      Date.UTC(2026, 10, 9, 6, 0, 30, 500),
+    );
     expect(parseHorizonsDate("nonsense")).toBeNaN();
   });
 });
@@ -70,8 +72,12 @@ describe("Horizons parsing", () => {
   });
 
   it("surfaces Horizons error text when there is no ephemeris", () => {
-    expect(() => parseHorizonsObserver("Cannot interpret date. Type `?!` for help.\n")).toThrow(HorizonsError);
-    expect(() => parseHorizonsObserver("Cannot interpret date.\n")).toThrow(/Cannot interpret date/);
+    expect(() => parseHorizonsObserver("Cannot interpret date. Type `?!` for help.\n")).toThrow(
+      HorizonsError,
+    );
+    expect(() => parseHorizonsObserver("Cannot interpret date.\n")).toThrow(
+      /Cannot interpret date/,
+    );
   });
 });
 
@@ -115,7 +121,19 @@ describe("live sky against terrain", () => {
   });
 
   it("interpolates azimuth across the 360° wrap", () => {
-    const sky = liveSky(flat, 10, 10, { sun: [{ t: 0, az: 350, el: 1 }, { t: 10, az: 10, el: 1 }], earth: eph.earth }, 5)!;
+    const sky = liveSky(
+      flat,
+      10,
+      10,
+      {
+        sun: [
+          { t: 0, az: 350, el: 1 },
+          { t: 10, az: 10, el: 1 },
+        ],
+        earth: eph.earth,
+      },
+      5,
+    )!;
     expect(sky.sunNow.az).toBeCloseTo(0, 9);
   });
 

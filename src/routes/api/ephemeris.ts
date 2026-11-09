@@ -19,7 +19,13 @@ export const Route = createFileRoute("/api/ephemeris")({
         const params = Object.fromEntries(new URL(request.url).searchParams);
         const parsed = ephemerisQuerySchema.safeParse(params);
         if (!parsed.success) {
-          return json({ error: "Invalid query", issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) }, 400);
+          return json(
+            {
+              error: "Invalid query",
+              issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+            },
+            400,
+          );
         }
         try {
           const data = await getEphemeris(parsed.data);
@@ -31,7 +37,12 @@ export const Route = createFileRoute("/api/ephemeris")({
           const status = e instanceof UpstreamError ? e.status : 500;
           console.error("ephemeris:", e);
           return json(
-            { error: e instanceof UpstreamError ? e.message : "Unexpected error while querying NASA JPL Horizons" },
+            {
+              error:
+                e instanceof UpstreamError
+                  ? e.message
+                  : "Unexpected error while querying NASA JPL Horizons",
+            },
             status,
             { "cache-control": "no-store" },
           );

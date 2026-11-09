@@ -4,11 +4,23 @@ import type { TerrainData } from "@/lib/lunar/analysis";
 import { ephemerisResponseSchema, liveSky, type EphemerisResponse } from "@/lib/lunar/ephemeris";
 import { kmToLatLon } from "@/lib/lunar/terrain";
 
-async function fetchEphemeris(lat: number, lon: number, altKm: number, signal: AbortSignal): Promise<EphemerisResponse> {
-  const qs = new URLSearchParams({ lat: lat.toFixed(3), lon: lon.toFixed(3), alt: altKm.toFixed(2) });
+async function fetchEphemeris(
+  lat: number,
+  lon: number,
+  altKm: number,
+  signal: AbortSignal,
+): Promise<EphemerisResponse> {
+  const qs = new URLSearchParams({
+    lat: lat.toFixed(3),
+    lon: lon.toFixed(3),
+    alt: altKm.toFixed(2),
+  });
   const res = await fetch(`/api/ephemeris?${qs}`, { signal });
   const body = await res.json().catch(() => null);
-  if (!res.ok) throw new Error((body as { error?: string } | null)?.error ?? `Ephemeris request failed (HTTP ${res.status})`);
+  if (!res.ok)
+    throw new Error(
+      (body as { error?: string } | null)?.error ?? `Ephemeris request failed (HTTP ${res.status})`,
+    );
   return ephemerisResponseSchema.parse(body);
 }
 
@@ -48,8 +60,18 @@ export function useLiveSky(t: TerrainData | null, point: { x: number; y: number 
   const kx = key?.x;
   const ky = key?.y;
   const sky = useMemo(
-    () => (t && kx !== undefined && ky !== undefined && query.data ? liveSky(t, kx, ky, query.data, now) : null),
+    () =>
+      t && kx !== undefined && ky !== undefined && query.data
+        ? liveSky(t, kx, ky, query.data, now)
+        : null,
     [t, kx, ky, query.data, now],
   );
-  return { sky, data: query.data, lonDeg: ll?.lon ?? 0, isLoading: query.isLoading, error: query.error as Error | null, refetch: query.refetch };
+  return {
+    sky,
+    data: query.data,
+    lonDeg: ll?.lon ?? 0,
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
+  };
 }
