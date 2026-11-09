@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowDownUp, MapPin } from "lucide-react";
 import { AppHeader } from "@/components/compass/AppHeader";
-import { ClassPill, DemoBadge, pct } from "@/components/compass/bits";
+import { ClassPill, DataSourceBadge, pct } from "@/components/compass/bits";
 import { useTerrain } from "@/hooks/use-terrain";
 import { metricsAt } from "@/lib/lunar/analysis";
 import { formatLatLon } from "@/lib/lunar/terrain";
@@ -18,12 +18,12 @@ export const Route = createFileRoute("/sites")({
       {
         name: "description",
         content:
-          "Compare simulated safety scores, slope, sunlight and Earth visibility for lunar south pole candidate landing sites.",
+          "Compare modelled safety scores, slope, sunlight and Earth visibility for lunar south pole candidate landing sites using NASA LOLA elevation data.",
       },
       { property: "og:title", content: "Candidate Landing Sites — Selene Compass" },
       {
         property: "og:description",
-        content: "Side-by-side comparison of south pole landing candidates using demonstration data.",
+        content: "Side-by-side comparison of south pole landing candidates using NASA LOLA elevation data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -73,15 +73,16 @@ function SitesPage() {
               Candidate landing sites
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Names follow publicly discussed south-pole regions; positions are approximate and all values
-              are simulated. Scores use the filters and weights you set on the Mission Map.
+              Names follow publicly discussed south-pole regions; positions are approximate. Elevation comes
+              from NASA LRO LOLA when available; slope, sunlight, Earth visibility and scores are modelled
+              estimates. Scores use the filters and weights you set on the Mission Map.
             </p>
           </div>
-          <DemoBadge />
+          <DataSourceBadge />
         </div>
 
         {!data ? (
-          <p className="mt-10 hud-label">Computing simulated terrain…</p>
+          <p className="mt-10 hud-label">Loading terrain…</p>
         ) : (
           <>
             <div className="mt-6 flex flex-wrap gap-2">

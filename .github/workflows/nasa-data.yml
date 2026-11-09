@@ -1,0 +1,55 @@
+name: NASA data
+
+# Bakes the real LRO LOLA south-pole elevation grid into public/data/ and runs live
+# integration tests against NASA JPL Horizons. Runs on demand, monthly (as a health
+# check of the NASA services), and whenever the data pipeline changes on a branch.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 3 * *"
+  push:
+    branches-ignore: [main]
+    paths:
+      - scripts/fetch-lola-dem.ts
+      - src/lib/lunar/pds.ts
+      - src/lib/lunar/terrain.ts
+      - src/lib/lunar/ephemeris.ts
+      - src/server/horizons.ts
+      - src/test/live/**
+      - .github/workflows/nasa-data.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nasa-data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+
+      - name: Fetch LOLA south-pole DEM (only the needed rows, via HTTP Range)
+        run: bun scripts/fetch-lola-dem.ts
+
+      - name: Live tests — NASA JPL Horizons + LOLA asset
+        run: bun run test:live
+
+      - name: Commit refreshed data
+        # Scheduled runs on main only verify NASA is reachable and the data still validate;
+        # baking new data happens on branches so it lands through a reviewed PR.
+        if: github.ref != 'refs/heads/main'
+        run: |
+          if [ -z "$(git status --porcelain -- public/data)" ]; then
+            echo "Data unchanged."; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          git commit -m "data: bake NASA LRO LOLA south-pole elevation grid"
+          git push

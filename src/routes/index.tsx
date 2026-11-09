@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/compass/AppHeader";
 import { ControlsPanel } from "@/components/compass/ControlsPanel";
 import { SafetyDashboard } from "@/components/compass/SafetyDashboard";
 import { MapView } from "@/components/compass/MapView";
-import { ClassPill, DemoBadge } from "@/components/compass/bits";
+import { ClassPill, DataSourceBadge } from "@/components/compass/bits";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useClassification, useSubject, useTerrain } from "@/hooks/use-terrain";
 
@@ -17,12 +17,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Interactive 3D map of the lunar south pole with safe and hazardous landing zones, solar illumination, slope and Earth-communication indicators. Demonstration data.",
+          "Interactive 3D map of the lunar south pole with safe and hazardous landing zones, solar illumination, slope and Earth-communication indicators, built on NASA LOLA elevation and JPL Horizons data.",
       },
       { property: "og:title", content: "Selene Compass — Lunar South Pole Landing Safety Map" },
       {
         property: "og:description",
-        content: "Explore simulated landing safety at the lunar south pole in an interactive 3D map.",
+        content: "Explore landing safety at the lunar south pole on NASA LOLA terrain in an interactive 3D map.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -84,7 +84,7 @@ function Dashboard() {
           <SheetHeader className="mb-4 text-left">
             <SheetTitle className="font-display tracking-wider">Map controls</SheetTitle>
             <SheetDescription>
-              <DemoBadge />
+              <DataSourceBadge />
             </SheetDescription>
           </SheetHeader>
           <ControlsPanel classification={classification} />

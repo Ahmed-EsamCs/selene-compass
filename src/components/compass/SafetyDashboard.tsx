@@ -14,7 +14,8 @@ import { Slider } from "@/components/ui/slider";
 import { useSubject } from "@/hooks/use-terrain";
 import { useCompass, type ColorMode } from "@/store/compass";
 import { cameraApi } from "./scene/camera-api";
-import { ClassPill, pct, SectionTitle } from "./bits";
+import { ClassPill, pct, SectionTitle, useDataSource } from "./bits";
+import { LiveSkyCard } from "./LiveSkyCard";
 import { cn } from "@/lib/utils";
 
 export function SafetyDashboard({ data }: { data: TerrainData | null }) {
@@ -23,6 +24,7 @@ export function SafetyDashboard({ data }: { data: TerrainData | null }) {
   const setProbe = useCompass((s) => s.setProbe);
   const selectSite = useCompass((s) => s.selectSite);
   const selectedSiteId = useCompass((s) => s.selectedSiteId);
+  const source = useDataSource();
 
   return (
     <div className="space-y-5">
@@ -69,7 +71,7 @@ export function SafetyDashboard({ data }: { data: TerrainData | null }) {
 
       {!data || !subject ? (
         <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-          {data ? "Select a landing site or tap the map." : "Computing simulated terrain…"}
+          {data ? "Select a landing site or tap the map." : "Loading terrain…"}
         </div>
       ) : (
         <SubjectView data={data} subject={subject} />
@@ -78,11 +80,20 @@ export function SafetyDashboard({ data }: { data: TerrainData | null }) {
       {data && <WeightsSection />}
       {data && <Ranking data={data} />}
 
-      <p className="rounded-md border border-caution/30 bg-caution/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
-        <strong className="text-caution">Demonstration only.</strong> Scores come from procedurally
-        generated terrain and a simplified horizon model. They are not NASA measurements and must
-        not be used for mission planning.
-      </p>
+      {source?.kind === "lola" ? (
+        <p className="rounded-md border border-primary/30 bg-primary/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
+          <strong className="text-primary">Real NASA terrain, modelled scores.</strong> Elevation is LRO LOLA{" "}
+          {source.product} resampled to 750 m cells; Sun/Earth positions come from JPL Horizons. Slope,
+          illumination, Earth visibility and safety scores are computed by Selene Compass from that data —
+          they are estimates, not official NASA products, and must not be used for mission planning.
+        </p>
+      ) : (
+        <p className="rounded-md border border-caution/30 bg-caution/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
+          <strong className="text-caution">Demonstration only.</strong> Scores come from procedurally
+          generated terrain and a simplified horizon model. They are not NASA measurements and must
+          not be used for mission planning.
+        </p>
+      )}
     </div>
   );
 }
@@ -156,6 +167,8 @@ function SubjectView({ data, subject }: { data: TerrainData; subject: Subject })
         </div>
       </div>
       {subject.site && <p className="text-xs text-muted-foreground">{subject.site.note}</p>}
+
+      <LiveSkyCard data={data} point={{ x: m.x, y: m.y }} />
 
       {/* Solar illumination */}
       <IndicatorCard

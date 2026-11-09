@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ExternalLink, Mountain, RadioTower, ShieldAlert, Sun } from "lucide-react";
 import { AppHeader } from "@/components/compass/AppHeader";
-import { DemoBadge } from "@/components/compass/bits";
+import { DataSourceBadge } from "@/components/compass/bits";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -10,12 +10,12 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "How Selene Compass simulates lunar south pole terrain, illumination, slope and Earth visibility, and why its values are demonstration data only.",
+          "How Selene Compass turns NASA LRO LOLA elevation and JPL Horizons ephemerides into slope, illumination, Earth-visibility and landing-safety estimates — and their limits.",
       },
       { property: "og:title", content: "Methodology & Data Notice — Selene Compass" },
       {
         property: "og:description",
-        content: "The simplified models behind Selene Compass and links to real NASA lunar data sources.",
+        content: "The NASA data and simplified models behind Selene Compass.",
       },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -28,22 +28,27 @@ const FACTORS = [
   {
     icon: Mountain,
     title: "Terrain slope",
-    body: "Computed from the simulated height grid (0.75 km cells) with central differences. Full credit at ≤ 2°, none at ≥ 20°. Ground steeper than 15° is always marked hazardous in this demo.",
+    body: "Computed with central differences from NASA LRO LOLA elevations resampled to 0.75 km cells (procedural terrain if the LOLA asset is unavailable). Full credit at ≤ 2°, none at ≥ 20°. Ground steeper than 15° is always marked hazardous. Slopes at 0.75 km are smoother than what a lander sees at metre scale.",
   },
   {
     icon: Sun,
     title: "Solar illumination",
-    body: "For each point, a horizon profile is ray-marched in 24 directions, including lunar curvature. The Sun circles the polar horizon at −1.5° to +1.5° elevation; the share of time its disk clears the horizon is the illumination value. Below 5% counts as permanent shadow.",
+    body: "For each point, a horizon profile is ray-marched in 24 directions, including lunar curvature. The Sun circles the polar horizon at −1.5° to +1.5° elevation; the share of time its disk clears the horizon is the illumination value. Below 5% counts as permanent shadow. The Live sky card uses the real current Sun position from NASA JPL Horizons.",
   },
   {
     icon: RadioTower,
     title: "Earth communication stability",
-    body: "Earth hangs low toward 0° longitude and wobbles about ±6.7° in elevation and ±7.9° in azimuth through libration. The value is the share of libration states in which Earth stays above the local horizon.",
+    body: "Earth hangs low toward 0° longitude and wobbles about ±6.7° in elevation and ±7.9° in azimuth through libration. The value is the share of libration states in which Earth stays above the local horizon. The Live sky card forecasts the real Earth track for the next 30 days from JPL Horizons.",
   },
 ];
 
 const SOURCES = [
   { label: "LRO Lunar Orbiter Laser Altimeter (LOLA)", href: "https://lola.gsfc.nasa.gov/" },
+  {
+    label: "LOLA south-pole DEM products (LDEM_80S_80M and others)",
+    href: "https://imbrium.mit.edu/BROWSE/LOLA_GDR/POLAR/SOUTH_POLE",
+  },
+  { label: "NASA/JPL Horizons ephemeris system", href: "https://ssd.jpl.nasa.gov/horizons/" },
   { label: "NASA PGDA — South pole illumination & topography products", href: "https://pgda.gsfc.nasa.gov/" },
   { label: "NASA Moon Trek", href: "https://trek.nasa.gov/moon/" },
   { label: "NASA Artemis program", href: "https://www.nasa.gov/humans-in-space/artemis/" },
@@ -62,14 +67,16 @@ function AboutPage() {
         <div className="panel mt-6 flex gap-3 border-l-2 border-caution p-4">
           <ShieldAlert className="mt-0.5 size-5 shrink-0 text-caution" />
           <div className="text-sm leading-relaxed">
-            <p className="font-semibold text-caution">Demonstration data — not NASA-verified.</p>
+            <p className="font-semibold text-caution">Real NASA inputs — modelled outputs.</p>
             <p className="mt-1 text-muted-foreground">
-              Selene Compass was built for the NASA Space Apps Challenge as a concept. Its terrain is
-              generated procedurally; crater names and positions are approximate. Every slope,
-              illumination, communication and safety value is simulated and must not be used for
-              mission planning or cited as a measurement.
+              Selene Compass was built for the NASA Space Apps Challenge. Elevation comes from NASA&apos;s
+              Lunar Reconnaissance Orbiter laser altimeter (LOLA) and live Sun/Earth positions from NASA
+              JPL Horizons. Slope, illumination, Earth visibility and safety scores are computed by this
+              app with simplified models over a 120 × 120 km window at 750 m resolution; they are
+              estimates, not official NASA products, and must not be used for mission planning. If the
+              LOLA data cannot be loaded, the app falls back to procedural terrain and says so.
             </p>
-            <div className="mt-3"><DemoBadge /></div>
+            <div className="mt-3"><DataSourceBadge /></div>
           </div>
         </div>
 
@@ -106,9 +113,9 @@ function AboutPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="font-display text-xl font-semibold tracking-wide">Real data to build on</h2>
+          <h2 className="font-display text-xl font-semibold tracking-wide">Data sources</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            A production version would replace the simulated grid with these public NASA datasets:
+            Public NASA datasets and services used by, or useful for going beyond, this app:
           </p>
           <ul className="mt-3 space-y-2">
             {SOURCES.map((s) => (

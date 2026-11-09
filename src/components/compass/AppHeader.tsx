@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { BookOpen, Map as MapIcon, Rows3 } from "lucide-react";
-import { DemoBadge } from "./bits";
+import { DataSourceBadge } from "./bits";
 
 const NAV = [
   { to: "/", label: "Mission Map", icon: MapIcon },
@@ -51,7 +51,7 @@ export function AppHeader() {
       </nav>
 
       <div className="ml-2 hidden lg:ml-auto lg:block">
-        <DemoBadge />
+        <DataSourceBadge />
       </div>
     </header>
   );

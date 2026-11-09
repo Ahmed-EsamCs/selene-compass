@@ -1,7 +1,8 @@
 /**
- * Landing-safety analysis over the DEMONSTRATION terrain.
- * Illumination and Earth-visibility come from a simplified horizon model run on
- * simulated heights. Results are illustrative and are NOT NASA-verified data.
+ * Landing-safety analysis over a height grid — either real NASA LRO LOLA elevations
+ * (see `scripts/fetch-lola-dem.ts`) or the procedural demonstration terrain fallback.
+ * Illumination and Earth-visibility come from a simplified horizon model run on those
+ * heights: they are modelled estimates, not NASA illumination products.
  */
 import { CELL_KM, GRID, MAP_HALF_KM, MOON_RADIUS_KM, gridToKm, makeHeightFn } from "./terrain";
 
@@ -42,7 +43,19 @@ export const DEFAULT_FILTERS: Filters = {
 
 export const DEFAULT_WEIGHTS: Weights = { slope: 0.4, illumination: 0.3, comm: 0.3 };
 
+/** Where the height grid came from — drives the provenance labels in the UI. */
+export type TerrainSource =
+  | {
+      kind: "lola";
+      product: string;
+      resolutionM: number;
+      url: string;
+      generatedAt: string;
+    }
+  | { kind: "simulated"; reason?: string };
+
 export interface TerrainData {
+  source: TerrainSource;
   size: number;
   cellKm: number;
   halfKm: number;
@@ -204,19 +217,32 @@ export function isSunlit(t: TerrainData, x: number, y: number, phase: number, el
 
 /* ---------------- full build ---------------- */
 
-export function buildTerrain(seed = 1969): TerrainData {
+/** Procedural demonstration terrain (used when real LOLA data is unavailable). */
+export function simulatedHeights(seed = 1969): Float32Array {
   const n = GRID;
   const heightFn = makeHeightFn(seed);
   const height = new Float32Array(n * n);
+  for (let iy = 0; iy < n; iy++) {
+    for (let ix = 0; ix < n; ix++) height[iy * n + ix] = heightFn(gridToKm(ix), gridToKm(iy));
+  }
+  return height;
+}
+
+export function buildTerrain(seed = 1969, reason?: string): TerrainData {
+  return buildTerrainFromHeights(simulatedHeights(seed), reason ? { kind: "simulated", reason } : { kind: "simulated" });
+}
+
+/** Derive slope, illumination and Earth visibility from a GRID×GRID height field (km). */
+export function buildTerrainFromHeights(height: Float32Array, source: TerrainSource): TerrainData {
+  const n = GRID;
+  if (height.length !== n * n) throw new Error(`Expected ${n * n} heights, got ${height.length}`);
   let minH = Infinity;
   let maxH = -Infinity;
-  for (let iy = 0; iy < n; iy++) {
-    for (let ix = 0; ix < n; ix++) {
-      const h = heightFn(gridToKm(ix), gridToKm(iy));
-      height[iy * n + ix] = h;
-      if (h < minH) minH = h;
-      if (h > maxH) maxH = h;
-    }
+  for (let k = 0; k < height.length; k++) {
+    const h = height[k]!;
+    if (!Number.isFinite(h)) throw new Error(`Height grid has a non-finite value at index ${k}`);
+    if (h < minH) minH = h;
+    if (h > maxH) maxH = h;
   }
 
   const slope = new Float32Array(n * n);
@@ -266,6 +292,7 @@ export function buildTerrain(seed = 1969): TerrainData {
   }
 
   const data: TerrainData = {
+    source,
     size: n,
     cellKm: CELL_KM,
     halfKm: MAP_HALF_KM,

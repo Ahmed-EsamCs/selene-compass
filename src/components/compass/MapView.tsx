@@ -18,7 +18,7 @@ import { findSite } from "@/lib/lunar/sites";
 import { useCompass, type ColorMode } from "@/store/compass";
 import { MoonScene } from "./scene/MoonScene";
 import { cameraApi } from "./scene/camera-api";
-import { ClassPill, DemoBadge, pct } from "./bits";
+import { ClassPill, DataSourceBadge, pct } from "./bits";
 import { cn } from "@/lib/utils";
 
 const LEGENDS: Record<Exclude<ColorMode, "none">, { title: string; gradient?: string; ends?: [string, string] }> = {
@@ -101,7 +101,7 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
           <div className="relative size-16 overflow-hidden rounded-full border border-primary/40">
             <div className="absolute inset-x-0 h-1/2 bg-gradient-to-b from-transparent to-primary/40 animate-scan" />
           </div>
-          <p className="hud-label">Computing simulated south-pole terrain…</p>
+          <p className="hud-label">Loading south-pole terrain…</p>
         </div>
       )}
 
@@ -177,7 +177,7 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
             <span>Hover the terrain for a readout · drag to orbit · scroll or pinch to zoom</span>
           )}
         </div>
-        <DemoBadge className="pointer-events-auto hidden md:inline-flex lg:hidden" />
+        <DataSourceBadge className="pointer-events-auto hidden md:inline-flex lg:hidden" />
       </div>
     </div>
   );

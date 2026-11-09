@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { buildTerrain, classifyGrid, metricsAt, type TerrainData } from "@/lib/lunar/analysis";
+import { create } from "zustand";
+import { classifyGrid, metricsAt, type TerrainData, type TerrainSource } from "@/lib/lunar/analysis";
+import { loadTerrain } from "@/lib/lunar/lola";
 import { findSite } from "@/lib/lunar/sites";
 import { useCompass } from "@/store/compass";
+
+/** Provenance of the loaded terrain, readable by badges on any page without building it. */
+export const useTerrainStatus = create<{ source: TerrainSource | null }>(() => ({ source: null }));
 
 let cache: TerrainData | null = null;
 let pending: Promise<TerrainData> | null = null;
@@ -9,18 +14,18 @@ let pending: Promise<TerrainData> | null = null;
 function load(): Promise<TerrainData> {
   if (cache) return Promise.resolve(cache);
   if (!pending) {
-    pending = new Promise((resolve) => {
-      // Defer so the loading screen paints before the ~0.5s computation.
-      setTimeout(() => {
-        cache = buildTerrain();
-        resolve(cache);
-      }, 40);
+    // loadTerrain awaits the network before the ~0.5 s horizon analysis, so the
+    // loading screen has painted by the time the CPU work starts.
+    pending = loadTerrain().then((t) => {
+      cache = t;
+      useTerrainStatus.setState({ source: t.source });
+      return t;
     });
   }
   return pending;
 }
 
-/** Client-only: builds the simulated terrain once and shares it across pages. */
+/** Client-only: loads NASA LOLA terrain (or the labelled simulation) once and shares it across pages. */
 export function useTerrain(): TerrainData | null {
   const [data, setData] = useState<TerrainData | null>(null);
   useEffect(() => {
