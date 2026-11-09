@@ -44,6 +44,23 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
 - **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
+## NASA data
+
+| Data                                  | Source                                                         | How it gets in                                                                                      |
+| ------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| South-pole elevation                  | NASA LRO LOLA polar DEM (`LDEM_80S_80M`, PDS Geosciences Node) | `bun run data:lola` bakes a validated, checksummed 161×161 grid into `public/data/lola-south-pole/` |
+| Sun & Earth position in the lunar sky | NASA JPL Horizons API (no key needed)                          | Live, through the `/api/ephemeris` server route (cached, with timeouts/retries)                     |
+
+Slope, illumination, Earth visibility and safety scores are **modelled by this app** from that data. They are estimates, not NASA products. If the LOLA asset is missing, the app falls back to procedural terrain and labels it as demonstration data.
+
+```sh
+bun run test        # offline unit tests
+bun run test:live   # live tests against NASA (needs internet)
+bun run data:lola   # re-bake the LOLA terrain grid
+```
+
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and the build. The "NASA data" workflow re-bakes the LOLA grid and runs the live tests.
+
 ## Development
 
 Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
