@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "dataset": "LRO LOLA Gridded Data Record — polar stereographic DEM",
+  "product": "LDEM_80S_80M",
+  "mission": "Lunar Reconnaissance Orbiter (LRO) / Lunar Orbiter Laser Altimeter (LOLA)",
+  "provider": "NASA Planetary Data System, Geosciences Node",
+  "sourceLabel": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_80s_80m.lbl",
+  "sourceImage": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_80s_80m.img",
+  "sourceResolutionM": 80,
+  "referenceRadiusKm": 1737.4,
+  "units": "km above reference radius",
+  "encoding": "float32-le",
+  "grid": {
+    "size": 161,
+    "cellKm": 0.75,
+    "halfKm": 60,
+    "rowMajor": "iy (y from -halfKm), then ix (x from -halfKm)"
+  },
+  "frame": "+y toward 0°E (Earth-facing), +x toward 90°E; distance from pole maps linearly to latitude",
+  "minKm": -4.3577,
+  "maxKm": 1.9393,
+  "sha256": "765f19fed7b05783cd625d73c8f51e7bde67a9115ef62322339e5ccbeac1eeb8",
+  "validation": {
+    "finite": true,
+    "reliefKm": 6.297,
+    "shackletonDepthKm": 4.46,
+    "plausibleRelief": true,
+    "shackletonIsBowl": true
+  },
+  "generatedAt": "2026-11-09T21:31:13.443Z",
+  "firstCellKm": [
+    -60,
+    -60
+  ]
+}
