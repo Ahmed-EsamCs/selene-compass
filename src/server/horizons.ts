@@ -94,8 +94,12 @@ async function fetchBody(body: Body, req: EphemerisRequest, fetchImpl: FetchLike
     await new Promise((r) => setTimeout(r, 400));
   }
   if (lastErr instanceof UpstreamError) throw lastErr;
+  // Keep runtime internals (DNS errors, workerd references) in the logs, not in the UI.
+  console.error("Horizons network error:", lastErr);
+  const timedOut =
+    lastErr instanceof Error && /timeout|abort/i.test(`${lastErr.name} ${lastErr.message}`);
   throw new UpstreamError(
-    `Could not reach NASA JPL Horizons (${lastErr instanceof Error ? lastErr.message : "network error"})`,
+    timedOut ? "NASA JPL Horizons did not respond in time" : "Could not reach NASA JPL Horizons",
     504,
   );
 }

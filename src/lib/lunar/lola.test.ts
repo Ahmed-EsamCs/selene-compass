@@ -35,6 +35,14 @@ describe("LOLA asset loading", () => {
     expect(out.meta.product).toBe("LDEM_80S_80M");
   });
 
+  it("cache-busts the grid by checksum and revalidates the metadata", async () => {
+    const { fetchImpl } = asset();
+    const calls: [string, RequestInit | undefined][] = [];
+    await fetchLolaHeights(async (url, init) => (calls.push([url, init]), fetchImpl(url)));
+    expect(calls[0]).toEqual(["/data/lola-south-pole/meta.json", { cache: "no-cache" }]);
+    expect(calls[1]![0]).toMatch(/^\/data\/lola-south-pole\/heights\.f32\?v=[0-9a-f]{16}$/);
+  });
+
   it("rejects a corrupted file via its checksum", async () => {
     const { fetchImpl } = asset((_, bin) => bin.writeFloatLE(123, 40));
     await expect(fetchLolaHeights(fetchImpl)).rejects.toThrow(/checksum/);

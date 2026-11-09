@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -16,7 +16,10 @@ import { metricsAt } from "@/lib/lunar/analysis";
 import { formatLatLon } from "@/lib/lunar/terrain";
 import { findSite } from "@/lib/lunar/sites";
 import { useCompass, type ColorMode } from "@/store/compass";
-import { MoonScene } from "./scene/MoonScene";
+// three.js + react-three-fiber are ~1 MB: load them in parallel with the terrain data
+// instead of blocking the panels.
+const loadScene = () => import("./scene/MoonScene").then((m) => ({ default: m.MoonScene }));
+const MoonScene = lazy(loadScene);
 import { cameraApi } from "./scene/camera-api";
 import { ClassPill, DataSourceBadge, pct } from "./bits";
 import { cn } from "@/lib/utils";
@@ -89,6 +92,11 @@ export function MapView({
     [data, hover, filters, weights],
   );
 
+  // Start downloading the 3D engine while the terrain is still loading.
+  useEffect(() => {
+    void loadScene();
+  }, []);
+
   useEffect(() => {
     if (!ready) return;
     const s = useCompass.getState();
@@ -106,12 +114,14 @@ export function MapView({
     >
       {data && classification && (
         <div className="absolute inset-0">
-          <MoonScene
-            data={data}
-            classification={classification}
-            onReady={() => setReady(true)}
-            labelPortal={labelLayer}
-          />
+          <Suspense fallback={null}>
+            <MoonScene
+              data={data}
+              classification={classification}
+              onReady={() => setReady(true)}
+              labelPortal={labelLayer}
+            />
+          </Suspense>
         </div>
       )}
       <div

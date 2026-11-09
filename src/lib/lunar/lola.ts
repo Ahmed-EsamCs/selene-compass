@@ -21,7 +21,7 @@ export const lolaMetaSchema = z.object({
 });
 export type LolaMeta = z.infer<typeof lolaMetaSchema>;
 
-type FetchLike = (input: string) => Promise<Response>;
+type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 async function sha256Hex(buf: ArrayBuffer): Promise<string | null> {
   const subtle = globalThis.crypto?.subtle;
@@ -32,7 +32,9 @@ async function sha256Hex(buf: ArrayBuffer): Promise<string | null> {
 
 /** Fetch + verify the LOLA grid. Throws with a human-readable reason on any problem. */
 export async function fetchLolaHeights(fetchImpl: FetchLike = fetch, base = LOLA_BASE) {
-  const metaRes = await fetchImpl(`${base}/meta.json`);
+  // Always revalidate the small metadata file, and key the big grid by its checksum, so a
+  // browser can never pair a cached old grid with new metadata after a data refresh.
+  const metaRes = await fetchImpl(`${base}/meta.json`, { cache: "no-cache" });
   if (!metaRes.ok) throw new Error(`LOLA metadata not available (HTTP ${metaRes.status})`);
   const meta = lolaMetaSchema.parse(await metaRes.json());
   if (
@@ -42,7 +44,7 @@ export async function fetchLolaHeights(fetchImpl: FetchLike = fetch, base = LOLA
   ) {
     throw new Error("LOLA grid does not match this app version");
   }
-  const binRes = await fetchImpl(`${base}/heights.f32`);
+  const binRes = await fetchImpl(`${base}/heights.f32?v=${meta.sha256.slice(0, 16)}`);
   if (!binRes.ok) throw new Error(`LOLA heights not available (HTTP ${binRes.status})`);
   const buf = await binRes.arrayBuffer();
   if (buf.byteLength !== GRID * GRID * 4)
