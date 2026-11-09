@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -16,12 +16,18 @@ import { metricsAt } from "@/lib/lunar/analysis";
 import { formatLatLon } from "@/lib/lunar/terrain";
 import { findSite } from "@/lib/lunar/sites";
 import { useCompass, type ColorMode } from "@/store/compass";
-import { MoonScene } from "./scene/MoonScene";
+// three.js + react-three-fiber are ~1 MB: load them in parallel with the terrain data
+// instead of blocking the panels.
+const loadScene = () => import("./scene/MoonScene").then((m) => ({ default: m.MoonScene }));
+const MoonScene = lazy(loadScene);
 import { cameraApi } from "./scene/camera-api";
-import { ClassPill, DemoBadge, pct } from "./bits";
+import { ClassPill, DataSourceBadge, pct } from "./bits";
 import { cn } from "@/lib/utils";
 
-const LEGENDS: Record<Exclude<ColorMode, "none">, { title: string; gradient?: string; ends?: [string, string] }> = {
+const LEGENDS: Record<
+  Exclude<ColorMode, "none">,
+  { title: string; gradient?: string; ends?: [string, string] }
+> = {
   safety: { title: "Landing safety" },
   slope: {
     title: "Terrain slope",
@@ -45,7 +51,15 @@ const LEGENDS: Record<Exclude<ColorMode, "none">, { title: string; gradient?: st
   },
 };
 
-function HudButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+function HudButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -59,7 +73,13 @@ function HudButton({ label, onClick, children }: { label: string; onClick: () =>
   );
 }
 
-export function MapView({ data, classification }: { data: TerrainData | null; classification: Classification | null }) {
+export function MapView({
+  data,
+  classification,
+}: {
+  data: TerrainData | null;
+  classification: Classification | null;
+}) {
   const [ready, setReady] = useState(false);
   const labelLayer = useRef<HTMLDivElement>(null);
   const colorMode = useCompass((s) => s.colorMode);
@@ -72,6 +92,11 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
     [data, hover, filters, weights],
   );
 
+  // Start downloading the 3D engine while the terrain is still loading.
+  useEffect(() => {
+    void loadScene();
+  }, []);
+
   useEffect(() => {
     if (!ready) return;
     const s = useCompass.getState();
@@ -83,25 +108,33 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
   const legend = colorMode !== "none" ? LEGENDS[colorMode] : null;
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-space-gradient" data-scene-ready={ready ? "" : undefined}>
+    <div
+      className="relative h-full w-full overflow-hidden bg-space-gradient"
+      data-scene-ready={ready ? "" : undefined}
+    >
       {data && classification && (
         <div className="absolute inset-0">
-          <MoonScene
-            data={data}
-            classification={classification}
-            onReady={() => setReady(true)}
-            labelPortal={labelLayer}
-          />
+          <Suspense fallback={null}>
+            <MoonScene
+              data={data}
+              classification={classification}
+              onReady={() => setReady(true)}
+              labelPortal={labelLayer}
+            />
+          </Suspense>
         </div>
       )}
-      <div ref={labelLayer} className="pointer-events-none absolute inset-0 z-[5] overflow-hidden [&_button]:pointer-events-auto" />
+      <div
+        ref={labelLayer}
+        className="pointer-events-none absolute inset-0 z-[5] overflow-hidden [&_button]:pointer-events-auto"
+      />
 
       {(!data || !ready) && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-space-gradient">
           <div className="relative size-16 overflow-hidden rounded-full border border-primary/40">
             <div className="absolute inset-x-0 h-1/2 bg-gradient-to-b from-transparent to-primary/40 animate-scan" />
           </div>
-          <p className="hud-label">Computing simulated south-pole terrain…</p>
+          <p className="hud-label">Loading south-pole terrain…</p>
         </div>
       )}
 
@@ -111,11 +144,19 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
           <div className="hud-label mb-2">{legend.title}</div>
           {colorMode === "safety" ? (
             <ul className="space-y-1 text-[11px] sm:text-xs">
-              <li className="flex items-center gap-2"><span className="size-2.5 rounded-sm bg-safe" /> Safe landing zone</li>
-              <li className="flex items-center gap-2"><span className="size-2.5 rounded-sm bg-caution" /> Caution</li>
-              <li className="flex items-center gap-2"><span className="size-2.5 rounded-sm bg-hazard" /> Hazardous</li>
+              <li className="flex items-center gap-2">
+                <span className="size-2.5 rounded-sm bg-safe" /> Safe landing zone
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="size-2.5 rounded-sm bg-caution" /> Caution
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="size-2.5 rounded-sm bg-hazard" /> Hazardous
+              </li>
               {layers.psr && (
-                <li className="flex items-center gap-2"><span className="size-2.5 rounded-sm bg-psr" /> Permanent shadow</li>
+                <li className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-sm bg-psr" /> Permanent shadow
+                </li>
               )}
             </ul>
           ) : (
@@ -132,26 +173,48 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
 
       {/* Navigation HUD */}
       <div className="panel absolute top-3 right-3 z-20 flex flex-col items-center p-1">
-        <HudButton label="Zoom in" onClick={() => cameraApi.zoom(0.7)}><ZoomIn /></HudButton>
-        <HudButton label="Zoom out" onClick={() => cameraApi.zoom(1.4)}><ZoomOut /></HudButton>
+        <HudButton label="Zoom in" onClick={() => cameraApi.zoom(0.7)}>
+          <ZoomIn />
+        </HudButton>
+        <HudButton label="Zoom out" onClick={() => cameraApi.zoom(1.4)}>
+          <ZoomOut />
+        </HudButton>
         <div className="my-1 h-px w-6 bg-border" />
-        <HudButton label="Rotate left" onClick={() => cameraApi.rotate(-30)}><RotateCcw /></HudButton>
-        <HudButton label="Rotate right" onClick={() => cameraApi.rotate(30)}><RotateCw /></HudButton>
+        <HudButton label="Rotate left" onClick={() => cameraApi.rotate(-30)}>
+          <RotateCcw />
+        </HudButton>
+        <HudButton label="Rotate right" onClick={() => cameraApi.rotate(30)}>
+          <RotateCw />
+        </HudButton>
         <div className="my-1 h-px w-6 bg-border" />
-        <HudButton label="Top view" onClick={() => cameraApi.top()}><ScanEye /></HudButton>
-        <HudButton label="Reset view" onClick={() => cameraApi.reset()}><Home /></HudButton>
+        <HudButton label="Top view" onClick={() => cameraApi.top()}>
+          <ScanEye />
+        </HudButton>
+        <HudButton label="Reset view" onClick={() => cameraApi.reset()}>
+          <Home />
+        </HudButton>
       </div>
 
       {/* Pan pad */}
       <div className="panel absolute right-3 bottom-24 z-20 hidden grid-cols-3 p-1 sm:grid md:bottom-16">
         <span />
-        <HudButton label="Pan forward" onClick={() => cameraApi.pan(0, 10)}><ChevronUp /></HudButton>
+        <HudButton label="Pan forward" onClick={() => cameraApi.pan(0, 10)}>
+          <ChevronUp />
+        </HudButton>
         <span />
-        <HudButton label="Pan left" onClick={() => cameraApi.pan(-10, 0)}><ChevronLeft /></HudButton>
-        <span className="flex items-center justify-center"><span className="size-1.5 rounded-full bg-primary" /></span>
-        <HudButton label="Pan right" onClick={() => cameraApi.pan(10, 0)}><ChevronRight /></HudButton>
+        <HudButton label="Pan left" onClick={() => cameraApi.pan(-10, 0)}>
+          <ChevronLeft />
+        </HudButton>
+        <span className="flex items-center justify-center">
+          <span className="size-1.5 rounded-full bg-primary" />
+        </span>
+        <HudButton label="Pan right" onClick={() => cameraApi.pan(10, 0)}>
+          <ChevronRight />
+        </HudButton>
         <span />
-        <HudButton label="Pan back" onClick={() => cameraApi.pan(0, -10)}><ChevronDown /></HudButton>
+        <HudButton label="Pan back" onClick={() => cameraApi.pan(0, -10)}>
+          <ChevronDown />
+        </HudButton>
         <span />
       </div>
 
@@ -177,7 +240,7 @@ export function MapView({ data, classification }: { data: TerrainData | null; cl
             <span>Hover the terrain for a readout · drag to orbit · scroll or pinch to zoom</span>
           )}
         </div>
-        <DemoBadge className="pointer-events-auto hidden md:inline-flex lg:hidden" />
+        <DataSourceBadge className="pointer-events-auto hidden md:inline-flex lg:hidden" />
       </div>
     </div>
   );

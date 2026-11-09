@@ -84,12 +84,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Selene Compass" },
       {
         name: "description",
-        content: "Interactive 3D landing-safety explorer for the lunar south pole (demonstration data).",
+        content:
+          "Interactive 3D landing-safety explorer for the lunar south pole, built on NASA LOLA elevation and JPL Horizons data.",
       },
       { property: "og:title", content: "Selene Compass" },
       {
         property: "og:description",
-        content: "Interactive 3D landing-safety explorer for the lunar south pole (demonstration data).",
+        content:
+          "Interactive 3D landing-safety explorer for the lunar south pole, built on NASA LOLA elevation and JPL Horizons data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -82,7 +82,8 @@ function LayersSection() {
       <ul className="mt-3 space-y-1">
         {LAYER_ROWS.map((r) => {
           const disabled =
-            colorMode !== "safety" && (r.key === "safe" || r.key === "caution" || r.key === "hazard");
+            colorMode !== "safety" &&
+            (r.key === "safe" || r.key === "caution" || r.key === "hazard");
           return (
             <li key={r.key}>
               <label
@@ -219,9 +220,18 @@ function FiltersSection({ classification }: { classification: Classification | n
       {classification && (
         <div className="mt-4 rounded-md border bg-secondary/40 p-3">
           <div className="flex h-2 overflow-hidden rounded-full">
-            <div className="bg-safe" style={{ width: `${(classification.safeKm2 / total) * 100}%` }} />
-            <div className="bg-caution" style={{ width: `${(classification.cautionKm2 / total) * 100}%` }} />
-            <div className="bg-hazard" style={{ width: `${(classification.hazardKm2 / total) * 100}%` }} />
+            <div
+              className="bg-safe"
+              style={{ width: `${(classification.safeKm2 / total) * 100}%` }}
+            />
+            <div
+              className="bg-caution"
+              style={{ width: `${(classification.cautionKm2 / total) * 100}%` }}
+            />
+            <div
+              className="bg-hazard"
+              style={{ width: `${(classification.hazardKm2 / total) * 100}%` }}
+            />
           </div>
           <dl className="mt-2.5 grid grid-cols-3 gap-1 text-center">
             {(
@@ -233,11 +243,13 @@ function FiltersSection({ classification }: { classification: Classification | n
             ).map(([l, v, c]) => (
               <div key={l}>
                 <dt className="text-[10px] tracking-wider text-muted-foreground uppercase">{l}</dt>
-                <dd className={cn("font-mono text-sm", c)}>{Math.round(v).toLocaleString("en-US")}</dd>
+                <dd className={cn("font-mono text-sm", c)}>
+                  {Math.round(v).toLocaleString("en-US")}
+                </dd>
               </div>
             ))}
           </dl>
-          <p className="mt-1 text-center text-[10px] text-muted-foreground">km² of simulated area</p>
+          <p className="mt-1 text-center text-[10px] text-muted-foreground">km² of mapped area</p>
         </div>
       )}
     </div>

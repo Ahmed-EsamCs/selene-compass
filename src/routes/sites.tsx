@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowDownUp, MapPin } from "lucide-react";
 import { AppHeader } from "@/components/compass/AppHeader";
-import { ClassPill, DemoBadge, pct } from "@/components/compass/bits";
+import { ClassPill, DataSourceBadge, pct, SiteProvenance } from "@/components/compass/bits";
 import { useTerrain } from "@/hooks/use-terrain";
 import { metricsAt } from "@/lib/lunar/analysis";
 import { formatLatLon } from "@/lib/lunar/terrain";
@@ -18,12 +18,13 @@ export const Route = createFileRoute("/sites")({
       {
         name: "description",
         content:
-          "Compare simulated safety scores, slope, sunlight and Earth visibility for lunar south pole candidate landing sites.",
+          "Compare modelled safety scores, slope, sunlight and Earth visibility for lunar south pole candidate landing sites using NASA LOLA elevation data.",
       },
       { property: "og:title", content: "Candidate Landing Sites — Selene Compass" },
       {
         property: "og:description",
-        content: "Side-by-side comparison of south pole landing candidates using demonstration data.",
+        content:
+          "Side-by-side comparison of south pole landing candidates using NASA LOLA elevation data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -73,15 +74,17 @@ function SitesPage() {
               Candidate landing sites
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Names follow publicly discussed south-pole regions; positions are approximate and all values
-              are simulated. Scores use the filters and weights you set on the Mission Map.
+              Sites use published coordinates where a source exists; otherwise the best spot this
+              app finds in the named region. Elevation is NASA LRO LOLA; slope, sunlight, Earth
+              visibility and scores are modelled estimates using the filters and weights you set on
+              the Mission Map.
             </p>
           </div>
-          <DemoBadge />
+          <DataSourceBadge />
         </div>
 
         {!data ? (
-          <p className="mt-10 hud-label">Computing simulated terrain…</p>
+          <p className="mt-10 hud-label">Loading terrain…</p>
         ) : (
           <>
             <div className="mt-6 flex flex-wrap gap-2">
@@ -89,10 +92,17 @@ function SitesPage() {
                 <button
                   key={c.key}
                   type="button"
-                  onClick={() => setSort((s) => ({ key: c.key, desc: s.key === c.key ? !s.desc : c.key !== "slope" }))}
+                  onClick={() =>
+                    setSort((s) => ({
+                      key: c.key,
+                      desc: s.key === c.key ? !s.desc : c.key !== "slope",
+                    }))
+                  }
                   className={cn(
                     "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs tracking-wider uppercase",
-                    sort.key === c.key ? "border-primary bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground",
+                    sort.key === c.key
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   <ArrowDownUp className="size-3" />
@@ -108,7 +118,9 @@ function SitesPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="font-display font-semibold tracking-wide">{site.name}</h2>
-                      <p className="font-mono text-[11px] text-muted-foreground">{formatLatLon(site.x, site.y)}</p>
+                      <p className="font-mono text-[11px] text-muted-foreground">
+                        {formatLatLon(site.x, site.y)}
+                      </p>
                     </div>
                     <div className="text-right">
                       <div className="font-mono text-2xl">{Math.round(m.score)}</div>
@@ -116,11 +128,24 @@ function SitesPage() {
                     </div>
                   </div>
                   <dl className="mt-3 grid grid-cols-4 gap-2 text-center font-mono text-xs">
-                    <div><dt className="hud-label">Slope</dt><dd>{m.slope.toFixed(1)}°</dd></div>
-                    <div><dt className="hud-label">Sun</dt><dd>{pct(m.illumination)}</dd></div>
-                    <div><dt className="hud-label">Earth</dt><dd>{pct(m.comm)}</dd></div>
-                    <div><dt className="hud-label">Elev</dt><dd>{(m.elevation * 1000).toFixed(0)}m</dd></div>
+                    <div>
+                      <dt className="hud-label">Slope</dt>
+                      <dd>{m.slope.toFixed(1)}°</dd>
+                    </div>
+                    <div>
+                      <dt className="hud-label">Sun</dt>
+                      <dd>{pct(m.illumination)}</dd>
+                    </div>
+                    <div>
+                      <dt className="hud-label">Earth</dt>
+                      <dd>{pct(m.comm)}</dd>
+                    </div>
+                    <div>
+                      <dt className="hud-label">Elev</dt>
+                      <dd>{(m.elevation * 1000).toFixed(0)}m</dd>
+                    </div>
                   </dl>
+                  <SiteProvenance site={site} className="mt-3" />
                   <button
                     type="button"
                     onClick={() => view(site.id)}
@@ -140,25 +165,36 @@ function SitesPage() {
                     <th className="hud-label p-3">Location</th>
                     <th className="hud-label p-3">Class</th>
                     {COLS.map((c) => (
-                      <th key={c.key} className="hud-label p-3 text-right">{c.label}</th>
+                      <th key={c.key} className="hud-label p-3 text-right">
+                        {c.label}
+                      </th>
                     ))}
                     <th className="p-3" />
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map(({ site, m }) => (
-                    <tr key={site.id} className="border-b border-border/50 last:border-0 hover:bg-accent/30">
+                    <tr
+                      key={site.id}
+                      className="border-b border-border/50 last:border-0 hover:bg-accent/30"
+                    >
                       <td className="p-3">
                         <div className="font-medium">{site.name}</div>
-                        <div className="max-w-xs text-xs text-muted-foreground">{site.note}</div>
+                        <SiteProvenance site={site} className="max-w-sm" />
                       </td>
-                      <td className="p-3 font-mono text-xs text-muted-foreground">{formatLatLon(site.x, site.y)}</td>
-                      <td className="p-3"><ClassPill cls={m.cls} /></td>
+                      <td className="p-3 font-mono text-xs text-muted-foreground">
+                        {formatLatLon(site.x, site.y)}
+                      </td>
+                      <td className="p-3">
+                        <ClassPill cls={m.cls} />
+                      </td>
                       <td className="p-3 text-right font-mono text-base">{Math.round(m.score)}</td>
                       <td className="p-3 text-right font-mono">{m.slope.toFixed(1)}°</td>
                       <td className="p-3 text-right font-mono">{pct(m.illumination)}</td>
                       <td className="p-3 text-right font-mono">{pct(m.comm)}</td>
-                      <td className="p-3 text-right font-mono">{(m.elevation * 1000).toFixed(0)} m</td>
+                      <td className="p-3 text-right font-mono">
+                        {(m.elevation * 1000).toFixed(0)} m
+                      </td>
                       <td className="p-3 text-right">
                         <button
                           type="button"

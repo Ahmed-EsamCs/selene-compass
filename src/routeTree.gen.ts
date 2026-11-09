@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as SitesRouteImport } from './routes/sites'
+import { Route as ApiEphemerisRouteImport } from './routes/api/ephemeris'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const SitesRoute = SitesRouteImport.update({
   path: '/sites',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEphemerisRoute = ApiEphemerisRouteImport.update({
+  id: '/api/ephemeris',
+  path: '/api/ephemeris',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/sites': typeof SitesRoute
+  '/api/ephemeris': typeof ApiEphemerisRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/sites': typeof SitesRoute
+  '/api/ephemeris': typeof ApiEphemerisRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/sites': typeof SitesRoute
+  '/api/ephemeris': typeof ApiEphemerisRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/sites'
+  fullPaths: '/' | '/about' | '/sites' | '/api/ephemeris'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/sites'
-  id: '__root__' | '/' | '/about' | '/sites'
+  to: '/' | '/about' | '/sites' | '/api/ephemeris'
+  id: '__root__' | '/' | '/about' | '/sites' | '/api/ephemeris'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   SitesRoute: typeof SitesRoute
+  ApiEphemerisRoute: typeof ApiEphemerisRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ephemeris': {
+      id: '/api/ephemeris'
+      path: '/api/ephemeris'
+      fullPath: '/api/ephemeris'
+      preLoaderRoute: typeof ApiEphemerisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   SitesRoute: SitesRoute,
+  ApiEphemerisRoute: ApiEphemerisRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

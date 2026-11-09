@@ -79,11 +79,19 @@ function Earth() {
     g.fillStyle = "#1d4f9c";
     g.fillRect(0, 0, 256, 128);
     let seed = 42;
-    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     for (let i = 0; i < 40; i++) {
       g.fillStyle = i % 3 === 0 ? "rgba(255,255,255,0.75)" : "rgba(70,140,80,0.85)";
       g.beginPath();
-      g.ellipse(rnd() * 256, 20 + rnd() * 88, 6 + rnd() * 24, 3 + rnd() * 10, rnd() * 3, 0, Math.PI * 2);
+      g.ellipse(
+        rnd() * 256,
+        20 + rnd() * 88,
+        6 + rnd() * 24,
+        3 + rnd() * 10,
+        rnd() * 3,
+        0,
+        Math.PI * 2,
+      );
       g.fill();
     }
     const t = new THREE.CanvasTexture(c);
@@ -252,7 +260,15 @@ export function MoonScene({
       gl={{ antialias: true }}
     >
       <color attach="background" args={[PALETTE.space]} />
-      <Stars radius={1400} depth={300} count={5000} factor={18} saturation={0.15} fade speed={0.3} />
+      <Stars
+        radius={1400}
+        depth={300}
+        count={5000}
+        factor={18}
+        saturation={0.15}
+        fade
+        speed={0.3}
+      />
       <Lighting shadows={layers.shadows} />
       {layers.earth && <Earth />}
       <Terrain

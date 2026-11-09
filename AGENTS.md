@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -27,12 +28,15 @@ use the editor.
   `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
+
 <!-- LOVABLE:END -->
 
 ## Project rules (Selene Compass)
 
 - Terrain, illumination, Earth-visibility and scoring live in `src/lib/lunar/*` as pure TypeScript (no React/three); the 3D scene and panels only draw their output, so rules stay unit-testable.
-- All terrain values are procedurally simulated; any UI showing them must keep a visible "demonstration data" label — never present them as NASA measurements.
-- 3D routes (`/`, `/sites`) set `ssr: false`; the terrain grid is built once client-side and shared via `useTerrain()`.
+- Elevation comes from NASA LRO LOLA, baked by `bun run data:lola` into `public/data/lola-south-pole/` (checksummed; never hand-edit). Sun/Earth positions come live from NASA JPL Horizons via the `/api/ephemeris` server route — the browser never calls NASA directly.
+- Slope, illumination, Earth visibility and scores are _modelled_ by this app from that data. UI must say so (`DataSourceBadge`) and must never present them as NASA measurements. If the LOLA asset fails to load, the app falls back to procedural terrain and the badge switches to "Demonstration data · simulated".
+- `bun run test` runs offline unit tests; `bun run test:live` (`LIVE_NASA=1`) hits real NASA services and runs in the "NASA data" workflow.
+- 3D routes (`/`, `/sites`) set `ssr: false`; the terrain grid is loaded/built once client-side and shared via `useTerrain()`.
 - HUD buttons drive the camera through `cameraApi` (registered by the in-canvas CameraRig) instead of React state, to keep per-frame camera motion out of React renders.
 - WebGL colours live in `scene/palette.ts` as sRGB mirrors of the CSS tokens and are converted to linear before writing vertex colours.

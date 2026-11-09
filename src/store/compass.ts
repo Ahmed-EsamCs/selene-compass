@@ -71,7 +71,7 @@ export const useCompass = create<CompassState>((set) => ({
   sunPhase: 0.32,
   sunPlaying: false,
   autoRotate: false,
-  selectedSiteId: "peak-shackleton",
+  selectedSiteId: "shackleton-rim",
   probe: null,
   hover: null,
   pendingFocus: false,
@@ -88,7 +88,6 @@ export const useCompass = create<CompassState>((set) => ({
   selectSite: (selectedSiteId, opts) =>
     set({ selectedSiteId, probe: null, pendingFocus: !!opts?.focusOnLoad }),
   clearPendingFocus: () => set({ pendingFocus: false }),
-  setProbe: (probe) =>
-    set((s) => ({ probe, selectedSiteId: probe ? null : s.selectedSiteId })),
+  setProbe: (probe) => set((s) => ({ probe, selectedSiteId: probe ? null : s.selectedSiteId })),
   setHover: (hover) => set({ hover }),
 }));

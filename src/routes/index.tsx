@@ -5,8 +5,14 @@ import { AppHeader } from "@/components/compass/AppHeader";
 import { ControlsPanel } from "@/components/compass/ControlsPanel";
 import { SafetyDashboard } from "@/components/compass/SafetyDashboard";
 import { MapView } from "@/components/compass/MapView";
-import { ClassPill, DemoBadge } from "@/components/compass/bits";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ClassPill, DataSourceBadge } from "@/components/compass/bits";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useClassification, useSubject, useTerrain } from "@/hooks/use-terrain";
 
 export const Route = createFileRoute("/")({
@@ -17,12 +23,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Interactive 3D map of the lunar south pole with safe and hazardous landing zones, solar illumination, slope and Earth-communication indicators. Demonstration data.",
+          "Interactive 3D map of the lunar south pole with safe and hazardous landing zones, solar illumination, slope and Earth-communication indicators, built on NASA LOLA elevation and JPL Horizons data.",
       },
       { property: "og:title", content: "Selene Compass — Lunar South Pole Landing Safety Map" },
       {
         property: "og:description",
-        content: "Explore simulated landing safety at the lunar south pole in an interactive 3D map.",
+        content:
+          "Explore landing safety at the lunar south pole on NASA LOLA terrain in an interactive 3D map.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -80,11 +87,14 @@ function Dashboard() {
       </div>
 
       <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
-        <SheetContent side="left" className="scrollbar-thin w-[88vw] overflow-y-auto border-border bg-sidebar p-4 sm:max-w-sm">
+        <SheetContent
+          side="left"
+          className="scrollbar-thin w-[88vw] overflow-y-auto border-border bg-sidebar p-4 sm:max-w-sm"
+        >
           <SheetHeader className="mb-4 text-left">
             <SheetTitle className="font-display tracking-wider">Map controls</SheetTitle>
             <SheetDescription>
-              <DemoBadge />
+              <DataSourceBadge />
             </SheetDescription>
           </SheetHeader>
           <ControlsPanel classification={classification} />
@@ -92,10 +102,15 @@ function Dashboard() {
       </Sheet>
 
       <Sheet open={rightOpen} onOpenChange={setRightOpen}>
-        <SheetContent side="right" className="scrollbar-thin w-[92vw] overflow-y-auto border-border bg-sidebar p-4 sm:max-w-md">
+        <SheetContent
+          side="right"
+          className="scrollbar-thin w-[92vw] overflow-y-auto border-border bg-sidebar p-4 sm:max-w-md"
+        >
           <SheetHeader className="mb-2 text-left">
             <SheetTitle className="sr-only">Safety score dashboard</SheetTitle>
-            <SheetDescription className="sr-only">Safety indicators for the selected location</SheetDescription>
+            <SheetDescription className="sr-only">
+              Safety indicators for the selected location
+            </SheetDescription>
           </SheetHeader>
           <SafetyDashboard data={data} />
         </SheetContent>

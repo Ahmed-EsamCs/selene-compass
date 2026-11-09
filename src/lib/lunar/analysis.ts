@@ -1,7 +1,8 @@
 /**
- * Landing-safety analysis over the DEMONSTRATION terrain.
- * Illumination and Earth-visibility come from a simplified horizon model run on
- * simulated heights. Results are illustrative and are NOT NASA-verified data.
+ * Landing-safety analysis over a height grid — either real NASA LRO LOLA elevations
+ * (see `scripts/fetch-lola-dem.ts`) or the procedural demonstration terrain fallback.
+ * Illumination and Earth-visibility come from a simplified horizon model run on those
+ * heights: they are modelled estimates, not NASA illumination products.
  */
 import { CELL_KM, GRID, MAP_HALF_KM, MOON_RADIUS_KM, gridToKm, makeHeightFn } from "./terrain";
 
@@ -42,7 +43,19 @@ export const DEFAULT_FILTERS: Filters = {
 
 export const DEFAULT_WEIGHTS: Weights = { slope: 0.4, illumination: 0.3, comm: 0.3 };
 
+/** Where the height grid came from — drives the provenance labels in the UI. */
+export type TerrainSource =
+  | {
+      kind: "lola";
+      product: string;
+      resolutionM: number;
+      url: string;
+      generatedAt: string;
+    }
+  | { kind: "simulated"; reason?: string };
+
 export interface TerrainData {
+  source: TerrainSource;
   size: number;
   cellKm: number;
   halfKm: number;
@@ -87,7 +100,11 @@ export function classify(
   score: number,
   filters: Filters = DEFAULT_FILTERS,
 ): SafetyClass {
-  if (slopeDeg > HARD_SLOPE_LIMIT_DEG || score < HAZARD_SCORE_BELOW || illumination < PSR_ILLUMINATION)
+  if (
+    slopeDeg > HARD_SLOPE_LIMIT_DEG ||
+    score < HAZARD_SCORE_BELOW ||
+    illumination < PSR_ILLUMINATION
+  )
     return "hazard";
   if (
     slopeDeg <= filters.maxSlope &&
@@ -101,7 +118,11 @@ export function classify(
 
 /* ---------------- terrain sampling ---------------- */
 
-export function sampleHeight(t: Pick<TerrainData, "height" | "size">, x: number, y: number): number {
+export function sampleHeight(
+  t: Pick<TerrainData, "height" | "size">,
+  x: number,
+  y: number,
+): number {
   const fx = (x + MAP_HALF_KM) / CELL_KM;
   const fy = (y + MAP_HALF_KM) / CELL_KM;
   const n = t.size;
@@ -156,9 +177,15 @@ export function diskVisible(elevDeg: number, horizonRad: number, radiusDeg: numb
 const SUN_AZ_SAMPLES = 24;
 const SUN_ELEVS = [-1, -0.5, 0, 0.5, 1].map((k) => k * SUN_MAX_ELEV_DEG);
 const EARTH_AZ = [-1, -0.5, 0, 0.5, 1].map((k) => k * EARTH_LIB_AZ_DEG * DEG);
-const EARTH_ELEVS = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1].map((k) => k * EARTH_LIB_ELEV_DEG);
+const EARTH_ELEVS = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1].map(
+  (k) => k * EARTH_LIB_ELEV_DEG,
+);
 
-export function illuminationAt(t: Pick<TerrainData, "height" | "size">, x: number, y: number): number {
+export function illuminationAt(
+  t: Pick<TerrainData, "height" | "size">,
+  x: number,
+  y: number,
+): number {
   let lit = 0;
   for (let a = 0; a < SUN_AZ_SAMPLES; a++) {
     const hz = horizonAngle(t, x, y, (a / SUN_AZ_SAMPLES) * Math.PI * 2);
@@ -167,7 +194,11 @@ export function illuminationAt(t: Pick<TerrainData, "height" | "size">, x: numbe
   return lit / (SUN_AZ_SAMPLES * SUN_ELEVS.length);
 }
 
-export function earthVisibilityAt(t: Pick<TerrainData, "height" | "size">, x: number, y: number): number {
+export function earthVisibilityAt(
+  t: Pick<TerrainData, "height" | "size">,
+  x: number,
+  y: number,
+): number {
   let vis = 0;
   for (const az of EARTH_AZ) {
     const hz = horizonAngle(t, x, y, az);
@@ -177,7 +208,13 @@ export function earthVisibilityAt(t: Pick<TerrainData, "height" | "size">, x: nu
 }
 
 /** Sun visibility around one lunar day (samples over azimuth) at mean-season elevation. */
-export function sunProfile(t: TerrainData, x: number, y: number, samples = 72, elevDeg = 0.8): number[] {
+export function sunProfile(
+  t: TerrainData,
+  x: number,
+  y: number,
+  samples = 72,
+  elevDeg = 0.8,
+): number[] {
   const out: number[] = [];
   for (let i = 0; i < samples; i++) {
     const hz = horizonAngle(t, x, y, (i / samples) * Math.PI * 2);
@@ -204,19 +241,35 @@ export function isSunlit(t: TerrainData, x: number, y: number, phase: number, el
 
 /* ---------------- full build ---------------- */
 
-export function buildTerrain(seed = 1969): TerrainData {
+/** Procedural demonstration terrain (used when real LOLA data is unavailable). */
+export function simulatedHeights(seed = 1969): Float32Array {
   const n = GRID;
   const heightFn = makeHeightFn(seed);
   const height = new Float32Array(n * n);
+  for (let iy = 0; iy < n; iy++) {
+    for (let ix = 0; ix < n; ix++) height[iy * n + ix] = heightFn(gridToKm(ix), gridToKm(iy));
+  }
+  return height;
+}
+
+export function buildTerrain(seed = 1969, reason?: string): TerrainData {
+  return buildTerrainFromHeights(
+    simulatedHeights(seed),
+    reason ? { kind: "simulated", reason } : { kind: "simulated" },
+  );
+}
+
+/** Derive slope, illumination and Earth visibility from a GRID×GRID height field (km). */
+export function buildTerrainFromHeights(height: Float32Array, source: TerrainSource): TerrainData {
+  const n = GRID;
+  if (height.length !== n * n) throw new Error(`Expected ${n * n} heights, got ${height.length}`);
   let minH = Infinity;
   let maxH = -Infinity;
-  for (let iy = 0; iy < n; iy++) {
-    for (let ix = 0; ix < n; ix++) {
-      const h = heightFn(gridToKm(ix), gridToKm(iy));
-      height[iy * n + ix] = h;
-      if (h < minH) minH = h;
-      if (h > maxH) maxH = h;
-    }
+  for (let k = 0; k < height.length; k++) {
+    const h = height[k]!;
+    if (!Number.isFinite(h)) throw new Error(`Height grid has a non-finite value at index ${k}`);
+    if (h < minH) minH = h;
+    if (h > maxH) maxH = h;
   }
 
   const slope = new Float32Array(n * n);
@@ -266,6 +319,7 @@ export function buildTerrain(seed = 1969): TerrainData {
   }
 
   const data: TerrainData = {
+    source,
     size: n,
     cellKm: CELL_KM,
     halfKm: MAP_HALF_KM,
@@ -318,7 +372,13 @@ export interface PointMetrics {
   cls: SafetyClass;
 }
 
-export function metricsAt(t: TerrainData, x: number, y: number, filters: Filters, weights: Weights): PointMetrics {
+export function metricsAt(
+  t: TerrainData,
+  x: number,
+  y: number,
+  filters: Filters,
+  weights: Weights,
+): PointMetrics {
   const ix = Math.max(0, Math.min(t.size - 1, Math.round((x + t.halfKm) / t.cellKm)));
   const iy = Math.max(0, Math.min(t.size - 1, Math.round((y + t.halfKm) / t.cellKm)));
   const k = iy * t.size + ix;
