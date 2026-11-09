@@ -249,9 +249,7 @@ function FiltersSection({ classification }: { classification: Classification | n
               </div>
             ))}
           </dl>
-          <p className="mt-1 text-center text-[10px] text-muted-foreground">
-            km² of mapped area
-          </p>
+          <p className="mt-1 text-center text-[10px] text-muted-foreground">km² of mapped area</p>
         </div>
       )}
     </div>
