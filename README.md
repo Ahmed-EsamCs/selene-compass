@@ -36,11 +36,6 @@ Create a complete working web application, not just a static image or mockup.
 **Live app**: https://lunar-south-pole-compass.lovable.app
 
 
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
 ## NASA data
 
 | Data                                  | Source                                                         | How it gets in                                                                                      |
@@ -58,13 +53,3 @@ bun run data:lola   # re-bake the LOLA terrain grid
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and the build. The "NASA data" workflow re-bakes the LOLA grid and runs the live tests.
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
