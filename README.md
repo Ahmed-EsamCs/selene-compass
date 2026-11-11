@@ -1,55 +1,167 @@
-# Lunar South Pole Compass
+# Selene Compass
+### Lunar South Pole Landing Safety & Decision Support System
 
-Build a fully functional web application named Selene Compass for NASA Space Apps.
+Selene Compass is an interactive decision-support platform designed to help scientists, mission planners, and space engineers identify and evaluate potential lunar landing sites, with a particular focus on the Moon's South Pole.
 
-Use my uploaded dashboard image as the primary visual reference. Recreate its layout and visual identity as closely as possible.
+Developed for the **NASA Space Apps Challenge**, the platform combines lunar terrain data, solar illumination analysis, and safety indicators into an interactive 3D mapping experience.
 
-Requirements:
+---
 
-- Dark navy and black space background.
+## 1. The Problem
 
-- Interactive 3D Lunar South Pole map in the center.
+Landing safely near the lunar South Pole is one of the major challenges facing future lunar exploration missions.
 
-- Green areas represent safe landing zones.
+The region presents several critical hazards:
 
-- Red areas represent hazardous landing zones.
+- **Rugged Terrain:** Craters, steep slopes, and sharp elevation changes increase the risk of landing failure or spacecraft instability.
+- **Permanent Shadowed Regions:** Some areas receive little or no direct sunlight, making solar-powered operations difficult.
+- **Unpredictable Illumination:** Solar visibility varies significantly across the terrain, affecting energy availability and mission planning.
+- **Communication Limitations:** The lunar South Pole's geography can create communication challenges between landing sites and Earth.
 
-- Cyan navigation and interface elements.
+Traditional site evaluation often requires analyzing multiple scientific datasets and tools separately, making comparisons time-consuming and complex.
 
-- Left sidebar with working filters and map controls.
+## 2. Our Solution
 
-- Right sidebar with Safety Score Dashboard.
+Selene Compass provides a unified visual platform that transforms complex lunar data into understandable and actionable information.
 
-- Interactive Solar Illumination, Terrain Slope, and Earth Communication Stability indicators.
+Instead of manually comparing different datasets, users can explore candidate landing locations through an interactive 3D lunar map and evaluate their suitability using multiple safety indicators.
 
-- Functional zoom, rotation, layer toggles, and navigation.
+The platform aims to simplify the decision-making process and help identify safer, more suitable landing zones.
 
-- Responsive design for mobile and desktop.
+## 3. Key Features
 
-Use React, Three.js, and clean modern components.
+### Interactive 3D Lunar Map
+- Explore the lunar South Pole through an interactive terrain visualization.
+- Navigate and inspect potential landing locations.
+- Visualize terrain characteristics and geographic features.
 
-Make every button functional. Clearly label demonstration data and never present simulated measurements as verified NASA data.
+### Terrain Analysis
+- Evaluate surface slopes and elevation variations.
+- Identify potentially hazardous terrain.
+- Explore crater structures and surrounding topography.
 
-Create a complete working web application, not just a static image or mockup.
+### Solar Illumination Analysis
+- Examine solar illumination conditions.
+- Identify areas with favorable sunlight exposure.
+- Understand how illumination affects potential mission operations.
 
+### Earth Communication Indicators
+- Evaluate communication visibility considerations.
+- Identify potential limitations caused by lunar geography.
 
-**Live app**: http://selenecompass.vercel.app/
+### Landing Safety Classification
+- Classify terrain according to its potential landing suitability.
+- Distinguish between safer and hazardous regions.
+- Provide visual indicators to support site evaluation.
 
+### Overall Safety Score
+- Combine multiple environmental indicators into an overall safety assessment.
+- Help users compare different candidate landing locations.
+- Support more informed landing-site selection.
 
-## NASA data
+## 4. Data Sources
 
-| Data                                  | Source                                                         | How it gets in                                                                                      |
-| ------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| South-pole elevation                  | NASA LRO LOLA polar DEM (`LDEM_80S_80M`, PDS Geosciences Node) | `bun run data:lola` bakes a validated, checksummed 161×161 grid into `public/data/lola-south-pole/` |
-| Sun & Earth position in the lunar sky | NASA JPL Horizons API (no key needed)                          | Live, through the `/api/ephemeris` server route (cached, with timeouts/retries)                     |
+The platform is designed around scientific lunar datasets, including:
 
-Slope, illumination, Earth visibility and safety scores are **modelled by this app** from that data. They are estimates, not NASA products. If the LOLA asset is missing, the app falls back to procedural terrain and labels it as demonstration data.
+| Data Source | Purpose |
+|---|---|
+| NASA LOLA | Lunar elevation and terrain analysis |
+| JPL Horizons | Solar and celestial position information |
 
-```sh
-bun run test        # offline unit tests
-bun run test:live   # live tests against NASA (needs internet)
-bun run data:lola   # re-bake the LOLA terrain grid
+These datasets help provide the scientific foundation for terrain evaluation and environmental analysis.
+
+## 5. Technology Stack
+
+The project is built using modern web technologies:
+
+- **React** – User interface development.
+- **TypeScript** – Type-safe application development.
+- **Vite** – Development server and build tooling.
+- **TanStack Router** – Application routing.
+- **Tailwind CSS** – Styling and responsive layouts.
+- **Lucide React** – Interface icons.
+
+## 6. Getting Started
+
+### Prerequisites
+
+- Node.js
+- Bun package manager
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd lunar-south-pole-compass
 ```
 
-CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and the build. The "NASA data" workflow re-bakes the LOLA grid and runs the live tests.
+Install dependencies:
 
+```bash
+bun install
+```
+
+Start the development server:
+
+```bash
+bun run dev
+```
+
+Open the local URL displayed in your terminal to access the application.
+
+### Production Build
+
+Build the application:
+
+```bash
+bun run build
+```
+
+Run the production preview if supported by the project scripts:
+
+```bash
+bun run preview
+```
+
+## 7. Project Structure
+
+```text
+src/
+├── components/
+│   ├── compass/
+│   └── ui/
+├── hooks/
+├── lib/
+├── routes/
+├── server/
+├── store/
+├── test/
+├── types/
+├── router.tsx
+├── routeTree.gen.ts
+├── server.ts
+└── styles.css
+
+public/
+scripts/
+```
+
+## 8. Project Goal
+
+Selene Compass aims to make lunar landing-site evaluation more accessible, visual, and data-driven.
+
+By bringing terrain analysis, illumination conditions, communication considerations, and safety indicators into one platform, the project supports the planning of safer and more efficient future lunar exploration missions.
+
+## 9. NASA Space Apps Challenge
+
+**Challenge:** NASA Space Apps Challenge
+
+**Project:** Selene Compass – Lunar South Pole Landing Safety and Decision Support System
+
+**Focus Area:** Lunar Exploration, Space Science, Data Visualization, and Mission Planning.
+
+---
+
+*Explore the Moon. Evaluate the terrain. Make safer landing decisions.*
