@@ -32,13 +32,10 @@ Make every button functional. Clearly label demonstration data and never present
 
 Create a complete working web application, not just a static image or mockup.
 
-This project was built with [Lovable](https://lovable.dev).
 
 **Live app**: https://lunar-south-pole-compass.lovable.app
 
-## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/9e0b0a5c-2998-5d87-9ef2-2c1c1c318d98).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
