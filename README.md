@@ -33,7 +33,7 @@ Make every button functional. Clearly label demonstration data and never present
 Create a complete working web application, not just a static image or mockup.
 
 
-**Live app**: https://lunar-south-pole-compass.lovable.app
+**Live app**: http://selenecompass.vercel.app/
 
 
 ## NASA data
