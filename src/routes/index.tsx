@@ -19,13 +19,13 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Selene Compass — Lunar South Pole Landing Safety Map" },
+      { title: "Selene Compass - Lunar South Pole Landing Safety Map" },
       {
         name: "description",
         content:
           "Interactive 3D map of the lunar south pole with safe and hazardous landing zones, solar illumination, slope and Earth-communication indicators, built on NASA LOLA elevation and JPL Horizons data.",
       },
-      { property: "og:title", content: "Selene Compass — Lunar South Pole Landing Safety Map" },
+      { property: "og:title", content: "Selene Compass - Lunar South Pole Landing Safety Map" },
       {
         property: "og:description",
         content:
